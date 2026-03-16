@@ -41,7 +41,7 @@ public class AccountsController : ControllerBase
     /// <summary>
     /// Get account by ID
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetAccountById")]
     public async Task<IActionResult> GetAccountById(Guid id)
     {
         try

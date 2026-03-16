@@ -9,13 +9,14 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: profile_write
+      POSTGRES_DB: postgres
     ports:
       - "5433:5432"
     volumes:
       - pg_write_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin -d profile_write" ]
+      test: [ "CMD-SHELL", "pg_isready -U admin -d postgres" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -124,11 +125,11 @@ services:
       - minimal
       - full
 
-  hrmapp-gateway:
+  workforcehub-gateway:
     build:
       context: .
       dockerfile: HrmApp.Gateway/Dockerfile
-    container_name: hrmapp-gateway
+    container_name: workforcehub-gateway
     ports:
       - "5000:80"
     environment:

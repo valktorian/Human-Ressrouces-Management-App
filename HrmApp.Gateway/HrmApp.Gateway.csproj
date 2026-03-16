@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <AssemblyName>WorkForceHub.Gateway</AssemblyName>
+    <RootNamespace>WorkForceHub.Gateway</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

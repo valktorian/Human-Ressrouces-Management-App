@@ -1,12 +1,17 @@
 using AspNetCoreRateLimit;
+using Microsoft.Extensions.DependencyInjection;
 using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ocelot.json
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
+
 builder.Services.AddOpenApi();
+
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,15 +42,8 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
 app.UseIpRateLimiting();
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseIpRateLimiting();
-
+await app.UseOcelot();
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

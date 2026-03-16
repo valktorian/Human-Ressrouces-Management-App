@@ -1,43 +1,58 @@
-﻿using AccountService.Command.Application.Commands;
+using AccountService.Command.Application.Abstractions;
+using AccountService.Command.Application.Commands;
+using AccountService.Command.Application.DTOs;
 using AccountService.Command.Domain;
-using AccountService.Command.Domain.Events;
+using Infrastructure.Api.Common;
 using Infrastructure.Api.Messaging;
 using Infrastructure.Api.Persistence;
+using Microsoft.AspNetCore.Identity;
 
 namespace AccountService.Command.Application.Handlers;
 
-public class CreateAccountHandler : ICommandHandler<CreateAccountCommand, Guid>
+public class CreateAccountHandler : ICommandHandler<CreateAccountCommand, CreateAccountResponse>
 {
+    private readonly IAccountRepository _accountRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IKafkaProducer _kafkaProducer;
+    private readonly IPasswordHasher<Account> _passwordHasher;
 
-    public CreateAccountHandler(IUnitOfWork unitOfWork, IKafkaProducer kafkaProducer)
+    public CreateAccountHandler(
+        IAccountRepository accountRepository,
+        IUnitOfWork unitOfWork,
+        IPasswordHasher<Account> passwordHasher)
     {
+        _accountRepository = accountRepository;
         _unitOfWork = unitOfWork;
-        _kafkaProducer = kafkaProducer;
+        _passwordHasher = passwordHasher;
     }
 
-    public async Task<Guid> HandleAsync(CreateAccountCommand request, CancellationToken cancellationToken = default)
+    public async Task<CreateAccountResponse> HandleAsync(
+        CreateAccountCommand request,
+        CancellationToken cancellationToken = default)
     {
-        var account = new Account
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        if (await _accountRepository.EmailExistsAsync(normalizedEmail, cancellationToken))
         {
-            Id = Guid.NewGuid(),
-            Email = request.Email,
-            PasswordHash = request.Password,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+            throw new ApiException("An account with this email already exists.", 409);
+        }
 
-        // Persister l'entité selon votre UnitOfWork/DbContext (exemple : ajout puis SaveChangesAsync)
-        // Si vous n'avez pas ajouté l'entité au contexte, assurez-vous de le faire ici avant SaveChangesAsync.
+        var account = Account.Create(
+            normalizedEmail,
+            request.FirstName,
+            request.LastName,
+            request.Role);
+
+        account.SetPasswordHash(_passwordHasher.HashPassword(account, request.Password));
+
+        await _accountRepository.AddAsync(account, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var accountCreatedEvent = new AccountCreatedEvent(account.Id, account.Email);
-        var payload = new { AccountId = account.Id, Email = account.Email, CreatedAt = account.CreatedAt };
-
-        // Publier sur le topic commun utilisé par le consumer
-        await _kafkaProducer.ProduceAsync(accountCreatedEvent, payload, "account.events");
-
-        return account.Id;
+        return new CreateAccountResponse(
+            account.Id,
+            account.Email,
+            account.FirstName,
+            account.LastName,
+            account.Role,
+            account.IsActive,
+            account.CreatedAt);
     }
 }

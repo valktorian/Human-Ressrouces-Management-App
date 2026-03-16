@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Api.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.Api.Persistence;
 
 public class UnitOfWork : IUnitOfWork
 {
@@ -9,6 +11,19 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await _context.SaveChangesAsync(cancellationToken);
+    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => _context.SaveChangesAsync(cancellationToken);
+}
+
+public class UnitOfWork<TContext> : IUnitOfWork where TContext : DbContext
+{
+    private readonly TContext _context;
+
+    public UnitOfWork(TContext context)
+    {
+        _context = context;
+    }
+
+    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => _context.SaveChangesAsync(cancellationToken);
 }

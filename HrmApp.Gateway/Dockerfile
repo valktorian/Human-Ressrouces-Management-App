@@ -17,4 +17,4 @@ RUN dotnet publish "HrmApp.Gateway.csproj" -c Release -o /app/publish /p:UseAppH
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "HrmApp.Gateway.dll"]
+ENTRYPOINT ["dotnet", "WorkForceHub.Gateway.dll"]
