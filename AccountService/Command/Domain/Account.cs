@@ -39,4 +39,18 @@ public class Account : BaseEntity
         PasswordHash = passwordHash;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void UpdateProfile(string email, string firstName, string lastName)
+    {
+        Email = email.Trim();
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateRole(string role)
+    {
+        Role = role.Trim();
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

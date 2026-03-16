@@ -38,6 +38,8 @@ public class KafkaConsumer : BackgroundService
         _logger.LogInformation("Kafka consumer starting");
         try
         {
+            // Let the host finish starting before entering the blocking consume loop.
+            await Task.Yield();
             _logger.LogInformation("About to call ConsumeEventsAsync");
             await ConsumeEventsAsync(stoppingToken);
             _logger.LogInformation("ConsumeEventsAsync returned normally");

@@ -1,6 +1,6 @@
 namespace AccountService.Command.Application.DTOs;
 
-public record CreateAccountResponse(
+public record AccountResponse(
     Guid AccountId,
     string Email,
     string FirstName,
@@ -8,5 +8,4 @@ public record CreateAccountResponse(
     string Role,
     bool IsActive,
     DateTime CreatedAt,
-    DateTime UpdatedAt)
-    : AccountResponse(AccountId, Email, FirstName, LastName, Role, IsActive, CreatedAt, UpdatedAt);
+    DateTime UpdatedAt);

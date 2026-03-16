@@ -1,6 +1,7 @@
 using AccountService.Query.Domain;
 using AccountService.Query.Infrastructure;
 using Infrastructure.Api.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -9,6 +10,7 @@ namespace AccountService.Query.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class AccountsController : ControllerBase
 {
     private readonly ReadDbContext _readDb;
@@ -24,6 +26,8 @@ public class AccountsController : ControllerBase
     /// Get all accounts from MongoDB read model
     /// </summary>
     [HttpGet]
+    [ProducesResponseType(typeof(BaseResponse<List<AccountReadModel>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllAccounts()
     {
         try
@@ -41,7 +45,11 @@ public class AccountsController : ControllerBase
     /// <summary>
     /// Get account by ID
     /// </summary>
+    /// <param name="id">The account identifier.</param>
     [HttpGet("{id}", Name = "GetAccountById")]
+    [ProducesResponseType(typeof(BaseResponse<AccountReadModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAccountById(Guid id)
     {
         try

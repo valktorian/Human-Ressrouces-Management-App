@@ -4,14 +4,13 @@ namespace AccountService.Command.Domain.Events
 {
     public class AccountPasswordChangedEvent : BaseEvent
     {
-        public Guid Id { get; init; }
-        public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
-        public string? Details { get; init; }
+        public Guid AccountId { get; }
+        public DateTime UpdatedAt { get; }
 
-        public AccountPasswordChangedEvent(Guid id, string? details = null)
+        public AccountPasswordChangedEvent(Guid accountId, DateTime updatedAt)
         {
-            Id = id;
-            Details = details;
+            AccountId = accountId;
+            UpdatedAt = updatedAt;
         }
     }
 }

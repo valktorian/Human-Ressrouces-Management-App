@@ -4,14 +4,15 @@ namespace AccountService.Command.Domain.Events
 {
     public class AccountRoleUpdatedEvent : BaseEvent
     {
-        public Guid Id { get; init; }
-        public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
-        public string? Details { get; init; }
+        public Guid AccountId { get; }
+        public string Role { get; }
+        public DateTime UpdatedAt { get; }
 
-        public AccountRoleUpdatedEvent(Guid id, string? details = null)
+        public AccountRoleUpdatedEvent(Guid accountId, string role, DateTime updatedAt)
         {
-            Id = id;
-            Details = details;
+            AccountId = accountId;
+            Role = role;
+            UpdatedAt = updatedAt;
         }
     }
 }

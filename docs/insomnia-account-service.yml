@@ -1,0 +1,219 @@
+_type: export
+__export_format: 4
+__export_date: 2026-03-16T12:00:00.000Z
+__export_source: codex.workforcehub
+resources:
+  - _id: wrk_workforcehub_account
+    _type: workspace
+    name: WorkForceHub AccountService
+    description: AccountService command/query routes with JWT login flow.
+    scope: collection
+
+  - _id: env_workforcehub_account
+    _type: environment
+    parentId: wrk_workforcehub_account
+    name: Local
+    data:
+      command_base_url: http://localhost:5222
+      query_base_url: http://localhost:5115
+      account_id: 11111111-1111-1111-1111-111111111111
+      jwt_token: ""
+      email: nadia.bennani@local.test
+      password: P@ssw0rd123!
+
+  - _id: fld_auth
+    _type: request_group
+    parentId: wrk_workforcehub_account
+    name: Auth
+
+  - _id: fld_command
+    _type: request_group
+    parentId: wrk_workforcehub_account
+    name: Command
+
+  - _id: fld_query
+    _type: request_group
+    parentId: wrk_workforcehub_account
+    name: Query
+
+  - _id: req_login
+    _type: request
+    parentId: fld_auth
+    name: Login
+    method: POST
+    url: "{{ _.command_base_url }}/api/auth/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "{{ _.email }}",
+          "password": "{{ _.password }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    afterResponseScript: |
+      const jsonBody = insomnia.response.json();
+      insomnia.environment.set("jwt_token", jsonBody.accessToken);
+      insomnia.environment.set("account_id", jsonBody.accountId);
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_create_account
+    _type: request
+    parentId: fld_command
+    name: Create Account
+    method: POST
+    url: "{{ _.command_base_url }}/api/accounts"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "{{ _.email }}",
+          "password": "{{ _.password }}",
+          "firstName": "Nadia",
+          "lastName": "Bennani",
+          "role": "HRAdmin"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    afterResponseScript: |
+      const jsonBody = insomnia.response.json();
+      insomnia.environment.set("account_id", jsonBody.accountId);
+      insomnia.environment.set("email", jsonBody.email);
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_update_account
+    _type: request
+    parentId: fld_command
+    name: Update Account
+    method: PUT
+    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "{{ _.email }}",
+          "firstName": "Nadia Updated",
+          "lastName": "Bennani Updated"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_update_role
+    _type: request
+    parentId: fld_command
+    name: Update Account Role
+    method: PATCH
+    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}/role"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "role": "Manager"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_change_password
+    _type: request
+    parentId: fld_command
+    name: Change Account Password
+    method: PATCH
+    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}/password"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "newPassword": "N3wP@ssw0rd456!"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_delete_account
+    _type: request
+    parentId: fld_command
+    name: Delete Account
+    method: DELETE
+    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_get_accounts
+    _type: request
+    parentId: fld_query
+    name: Get All Accounts
+    method: GET
+    url: "{{ _.query_base_url }}/api/accounts"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_get_account_by_id
+    _type: request
+    parentId: fld_query
+    name: Get Account By Id
+    method: GET
+    url: "{{ _.query_base_url }}/api/accounts/{{ _.account_id }}"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global

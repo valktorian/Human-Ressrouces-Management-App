@@ -53,6 +53,7 @@ public class CreateAccountHandler : ICommandHandler<CreateAccountCommand, Create
             account.LastName,
             account.Role,
             account.IsActive,
-            account.CreatedAt);
+            account.CreatedAt,
+            account.UpdatedAt);
     }
 }

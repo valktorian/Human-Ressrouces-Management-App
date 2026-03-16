@@ -1,12 +1,48 @@
 {
   "Routes": [
     {
+      "DownstreamPathTemplate": "/swagger/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5222
+        }
+      ],
+      "UpstreamPathTemplate": "/docs/account-command/{everything}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/swagger/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5115
+        }
+      ],
+      "UpstreamPathTemplate": "/docs/account-query/{everything}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5222
+        }
+      ],
+      "UpstreamPathTemplate": "/api/auth/login",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/accounts",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account-service-command",
-          "Port": 80
+          "Host": "host.docker.internal",
+          "Port": 5222
         }
       ],
       "UpstreamPathTemplate": "/api/accounts",
@@ -24,20 +60,56 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account-service-query",
-          "Port": 80
+          "Host": "host.docker.internal",
+          "Port": 5115
         }
       ],
       "UpstreamPathTemplate": "/api/accounts",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
+      "DownstreamPathTemplate": "/api/accounts/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5222
+        }
+      ],
+      "UpstreamPathTemplate": "/api/accounts/{id}",
+      "UpstreamHttpMethod": [ "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/accounts/{id}/role",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5222
+        }
+      ],
+      "UpstreamPathTemplate": "/api/accounts/{id}/role",
+      "UpstreamHttpMethod": [ "PATCH" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/accounts/{id}/password",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5222
+        }
+      ],
+      "UpstreamPathTemplate": "/api/accounts/{id}/password",
+      "UpstreamHttpMethod": [ "PATCH" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/accounts/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "account-service-query",
-          "Port": 80
+          "Host": "host.docker.internal",
+          "Port": 5115
         }
       ],
       "UpstreamPathTemplate": "/api/accounts/{everything}",
@@ -48,8 +120,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "profile-service-command",
-          "Port": 80
+          "Host": "host.docker.internal",
+          "Port": 5001
         }
       ],
       "UpstreamPathTemplate": "/api/profile/{everything}",
@@ -60,8 +132,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "time-service-query",
-          "Port": 80
+          "Host": "host.docker.internal",
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/api/time/{everything}",
@@ -72,8 +144,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "evolution-service-command",
-          "Port": 80
+          "Host": "host.docker.internal",
+          "Port": 5003
         }
       ],
       "UpstreamPathTemplate": "/api/evolution/{everything}",

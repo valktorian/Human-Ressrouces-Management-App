@@ -25,7 +25,34 @@ public class AccountEventConsumer : IEventHandler
 
     public async Task HandleAsync(JsonElement payload)
     {
-        await HandleAccountCreatedAsync(payload);
+        if (payload.TryGetProperty("DeletedAt", out _))
+        {
+            await HandleAccountDeletedAsync(payload);
+            return;
+        }
+
+        if (payload.TryGetProperty("FirstName", out _) && payload.TryGetProperty("CreatedAt", out _))
+        {
+            await HandleAccountCreatedAsync(payload);
+            return;
+        }
+
+        if (payload.TryGetProperty("FirstName", out _))
+        {
+            await HandleAccountUpdatedAsync(payload);
+            return;
+        }
+
+        if (payload.TryGetProperty("Role", out _))
+        {
+            await HandleAccountRoleUpdatedAsync(payload);
+            return;
+        }
+
+        if (payload.TryGetProperty("UpdatedAt", out _))
+        {
+            await HandleAccountPasswordChangedAsync(payload);
+        }
     }
 
     public async Task HandleAccountCreatedAsync(JsonElement payload)
@@ -61,6 +88,71 @@ public class AccountEventConsumer : IEventHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error handling AccountCreatedEvent");
+        }
+    }
+
+    public async Task HandleAccountUpdatedAsync(JsonElement payload)
+    {
+        try
+        {
+            var accountId = payload.GetProperty("AccountId").GetGuid();
+            var update = Builders<AccountReadModel>.Update
+                .Set(x => x.Email, payload.GetProperty("Email").GetString()!)
+                .Set(x => x.FirstName, payload.GetProperty("FirstName").GetString()!)
+                .Set(x => x.LastName, payload.GetProperty("LastName").GetString()!)
+                .Set(x => x.UpdatedAt, payload.GetProperty("UpdatedAt").GetDateTime());
+
+            await _readDb.Accounts.UpdateOneAsync(x => x.Id == accountId, update);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling AccountUpdatedEvent");
+        }
+    }
+
+    public async Task HandleAccountRoleUpdatedAsync(JsonElement payload)
+    {
+        try
+        {
+            var accountId = payload.GetProperty("AccountId").GetGuid();
+            var update = Builders<AccountReadModel>.Update
+                .Set(x => x.Role, payload.GetProperty("Role").GetString()!)
+                .Set(x => x.UpdatedAt, payload.GetProperty("UpdatedAt").GetDateTime());
+
+            await _readDb.Accounts.UpdateOneAsync(x => x.Id == accountId, update);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling AccountRoleUpdatedEvent");
+        }
+    }
+
+    public async Task HandleAccountPasswordChangedAsync(JsonElement payload)
+    {
+        try
+        {
+            var accountId = payload.GetProperty("AccountId").GetGuid();
+            var update = Builders<AccountReadModel>.Update
+                .Set(x => x.UpdatedAt, payload.GetProperty("UpdatedAt").GetDateTime());
+
+            await _readDb.Accounts.UpdateOneAsync(x => x.Id == accountId, update);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling AccountPasswordChangedEvent");
+        }
+    }
+
+    public async Task HandleAccountDeletedAsync(JsonElement payload)
+    {
+        try
+        {
+            var accountId = payload.GetProperty("AccountId").GetGuid();
+            await _readDb.Accounts.DeleteOneAsync(x => x.Id == accountId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling AccountDeletedEvent");
         }
     }
 }

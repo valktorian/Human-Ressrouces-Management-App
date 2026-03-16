@@ -4,14 +4,13 @@ namespace AccountService.Command.Domain.Events
 {
     public class AccountDeletedEvent : BaseEvent
     {
-        public Guid Id { get; init; }
-        public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
-        public string? Details { get; init; }
+        public Guid AccountId { get; }
+        public DateTime DeletedAt { get; }
 
-        public AccountDeletedEvent(Guid id, string? details = null)
+        public AccountDeletedEvent(Guid accountId, DateTime deletedAt)
         {
-            Id = id;
-            Details = details;
+            AccountId = accountId;
+            DeletedAt = deletedAt;
         }
     }
 }
