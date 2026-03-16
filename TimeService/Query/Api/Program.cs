@@ -9,5 +9,16 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.MapGet("/", () => Results.Ok(new
+{
+    Service = "TimeService.Query",
+    Status = "running",
+}));
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    Service = "TimeService.Query",
+    Status = "healthy",
+}));
 
 app.Run();

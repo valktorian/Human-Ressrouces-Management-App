@@ -1,6 +1,6 @@
 @ProfileService.Command.Api_HostAddress = http://localhost:5062
 
-GET {{ProfileService.Command.Api_HostAddress}}/weatherforecast/
+GET {{ProfileService.Command.Api_HostAddress}}/health
 Accept: application/json
 
 ###

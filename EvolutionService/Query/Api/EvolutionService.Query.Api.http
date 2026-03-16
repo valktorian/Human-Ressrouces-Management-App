@@ -1,6 +1,6 @@
 @EvolutionService.Query.Api_HostAddress = http://localhost:5011
 
-GET {{EvolutionService.Query.Api_HostAddress}}/weatherforecast/
+GET {{EvolutionService.Query.Api_HostAddress}}/health
 Accept: application/json
 
 ###

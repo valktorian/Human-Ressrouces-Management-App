@@ -1,6 +1,6 @@
 @TimeService.Query.Api_HostAddress = http://localhost:5257
 
-GET {{TimeService.Query.Api_HostAddress}}/weatherforecast/
+GET {{TimeService.Query.Api_HostAddress}}/health
 Accept: application/json
 
 ###

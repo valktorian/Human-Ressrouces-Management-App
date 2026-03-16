@@ -1,15 +1,24 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+app.MapGet("/", () => Results.Ok(new
+{
+    Service = "ProfileService.Command",
+    Status = "running",
+}));
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    Service = "ProfileService.Command",
+    Status = "healthy",
+}));
 
 app.Run();
