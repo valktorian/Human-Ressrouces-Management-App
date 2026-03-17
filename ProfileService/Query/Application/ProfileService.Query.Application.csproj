@@ -10,4 +10,10 @@
     <PackageReference Include="MediatR" Version="13.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\ProfileService.Query.Domain.csproj" />
+    <ProjectReference Include="..\Infrastructure\ProfileService.Query.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\ProfileService.Command.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
+  </ItemGroup>
 
 </Project>

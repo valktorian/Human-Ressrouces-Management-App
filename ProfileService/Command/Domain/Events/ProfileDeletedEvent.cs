@@ -1,17 +1,15 @@
-﻿using Infrastructure.Api.Base;
+using Infrastructure.Api.Base;
 
-namespace ProfileService.Command.Domain.Events
+namespace ProfileService.Command.Domain.Events;
+
+public class ProfileDeletedEvent : BaseEvent
 {
-    public class ProfileDeletedEvent : BaseEvent
-    {
-        public Guid Id { get; init; }
-        public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
-        public string? Details { get; init; }
+    public Guid ProfileId { get; }
+    public DateTime DeletedAt { get; }
 
-        public ProfileDeletedEvent(Guid id, string? details = null)
-        {
-            Id = id;
-            Details = details;
-        }
+    public ProfileDeletedEvent(Guid profileId, DateTime deletedAt)
+    {
+        ProfileId = profileId;
+        DeletedAt = deletedAt;
     }
 }
