@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\EvolutionService.Command.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
   </ItemGroup>
 
 </Project>

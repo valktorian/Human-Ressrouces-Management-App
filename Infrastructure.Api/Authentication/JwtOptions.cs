@@ -1,4 +1,4 @@
-namespace AccountService.Command.Api.Authentication;
+namespace Infrastructure.Api.Authentication;
 
 public class JwtOptions
 {

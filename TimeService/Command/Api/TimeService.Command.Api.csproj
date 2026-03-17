@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\TimeService.Command.Application.csproj" />
     <ProjectReference Include="..\Infrastructure\TimeService.Command.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
   </ItemGroup>
 
 </Project>

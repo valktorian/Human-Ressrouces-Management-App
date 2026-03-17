@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\EvolutionService.Query.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
   </ItemGroup>
 
 </Project>

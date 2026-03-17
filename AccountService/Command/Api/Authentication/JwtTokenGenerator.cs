@@ -1,5 +1,6 @@
 using AccountService.Command.Application.Abstractions;
 using AccountService.Command.Domain;
+using Infrastructure.Api.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

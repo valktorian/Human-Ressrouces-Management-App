@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\TimeService.Query.Application.csproj" />
     <ProjectReference Include="..\Infrastructure\TimeService.Query.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
   </ItemGroup>
 
 </Project>

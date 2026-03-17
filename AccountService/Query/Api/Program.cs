@@ -1,65 +1,15 @@
 using AccountService.Query.Application.Consumers;
 using AccountService.Query.Infrastructure;
+using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-var jwtSection = builder.Configuration.GetSection("Jwt");
-var issuer = jwtSection["Issuer"] ?? "WorkForceHub";
-var audience = jwtSection["Audience"] ?? "WorkForceHub.Client";
-var secretKey = jwtSection["SecretKey"] ?? throw new InvalidOperationException("JWT secret key is not configured.");
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = issuer,
-            ValidAudience = audience,
-            IssuerSigningKey = signingKey,
-            ClockSkew = TimeSpan.Zero,
-        };
-    });
-builder.Services.AddAuthorization();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "WorkForceHub Account Query API", Version = "v1" });
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter a valid JWT bearer token.",
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer",
-                },
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
+builder.Services.AddWorkForceHubSwagger("WorkForceHub Account Query API");
 
 var readDbContext = new ReadDbContext(builder.Configuration);
 builder.Services.AddSingleton(readDbContext);

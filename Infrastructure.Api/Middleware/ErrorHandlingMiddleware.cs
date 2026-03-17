@@ -1,4 +1,4 @@
-﻿using Infrastructure.Api.Common;
+using Infrastructure.Api.Common;
 using System.Net;
 using System.Text.Json;
 
@@ -23,18 +23,54 @@ public class ErrorHandlingMiddleware
         }
         catch (ApiException ex)
         {
-            _logger.LogWarning("Handled API exception: {Message}", ex.Message);
-            await HandleExceptionAsync(context, ex.StatusCode, ex.Message);
+            LogApiException(context, ex);
+            await HandleExceptionAsync(context, ex.StatusCode, ex.Message, ex.Details);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception");
-            await HandleExceptionAsync(context, (int)HttpStatusCode.InternalServerError, "Internal server error");
+            LogUnhandledException(context, ex);
+            await HandleExceptionAsync(
+                context,
+                (int)HttpStatusCode.InternalServerError,
+                "Internal server error");
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, int statusCode, string message)
+    private void LogApiException(HttpContext context, ApiException ex)
     {
+        _logger.LogWarning(
+            ex,
+            "API route failed. Method: {Method}, Path: {Path}, QueryString: {QueryString}, Endpoint: {Endpoint}, TraceId: {TraceId}, UserId: {UserId}, StatusCode: {StatusCode}, Details: {@Details}",
+            context.Request.Method,
+            context.Request.Path.Value,
+            context.Request.QueryString.Value,
+            context.GetEndpoint()?.DisplayName,
+            context.TraceIdentifier,
+            context.User?.Identity?.Name ?? "anonymous",
+            ex.StatusCode,
+            ex.Details);
+    }
+
+    private void LogUnhandledException(HttpContext context, Exception ex)
+    {
+        _logger.LogError(
+            ex,
+            "Unhandled route exception. Method: {Method}, Path: {Path}, QueryString: {QueryString}, Endpoint: {Endpoint}, TraceId: {TraceId}, UserId: {UserId}",
+            context.Request.Method,
+            context.Request.Path.Value,
+            context.Request.QueryString.Value,
+            context.GetEndpoint()?.DisplayName,
+            context.TraceIdentifier,
+            context.User?.Identity?.Name ?? "anonymous");
+    }
+
+    private static async Task HandleExceptionAsync(HttpContext context, int statusCode, string message, object? details = null)
+    {
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
+
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = statusCode;
 
@@ -42,7 +78,9 @@ public class ErrorHandlingMiddleware
         {
             success = false,
             error = message,
-            statusCode
+            details,
+            statusCode,
+            traceId = context.TraceIdentifier
         };
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(response));

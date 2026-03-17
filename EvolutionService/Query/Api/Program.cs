@@ -1,3 +1,5 @@
+using Infrastructure.Api.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
@@ -8,6 +10,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseGlobalErrorHandler();
 
 app.MapGet("/", () => Results.Ok(new
 {
