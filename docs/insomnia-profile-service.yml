@@ -1,0 +1,319 @@
+_type: export
+__export_format: 4
+__export_date: 2026-03-17T00:00:00.000Z
+__export_source: codex.workforcehub
+resources:
+  - _id: wrk_profile_service
+    _type: workspace
+    name: Profile Service
+    description: ProfileService requests with local environment and shared JWT token workflow.
+    scope: collection
+
+  - _id: env_profile_service
+    _type: environment
+    parentId: wrk_profile_service
+    name: Local
+    data:
+      account_command_base_url: http://localhost:5222
+      profile_command_base_url: http://localhost:5062
+      profile_query_base_url: http://localhost:5003
+      account_id: 11111111-1111-1111-1111-111111111111
+      profile_id: 11111111-1111-1111-1111-111111111111
+      jwt_token: ""
+      email: nadia.bennani@local.test
+      password: P@ssw0rd123!
+
+  - _id: fld_profile_auth
+    _type: request_group
+    parentId: wrk_profile_service
+    name: Auth
+
+  - _id: fld_profile_command
+    _type: request_group
+    parentId: wrk_profile_service
+    name: Command
+
+  - _id: fld_profile_query
+    _type: request_group
+    parentId: wrk_profile_service
+    name: Query
+
+  - _id: req_profile_login
+    _type: request
+    parentId: fld_profile_auth
+    name: Login
+    method: POST
+    url: "{{ _.account_command_base_url }}/api/auth/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "{{ _.email }}",
+          "password": "{{ _.password }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    afterResponseScript: |
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      const accessToken = jsonBody.accessToken || jsonBody.AccessToken || "";
+      const accountId = jsonBody.accountId || jsonBody.AccountId || "";
+      const email = jsonBody.email || jsonBody.Email || "";
+      if (accessToken) {
+        insomnia.environment.set("jwt_token", accessToken);
+      }
+      if (accountId) {
+        insomnia.environment.set("account_id", accountId);
+      }
+      if (email) {
+        insomnia.environment.set("email", email);
+      }
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_create_profile
+    _type: request
+    parentId: fld_profile_command
+    name: Create Profile
+    method: POST
+    url: "{{ _.profile_command_base_url }}/api/profiles"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "employeeNumber": "EMP-1001",
+          "firstName": "Nadia",
+          "lastName": "Bennani",
+          "workEmail": "nadia.bennani@workforcehub.local",
+          "personalEmail": "nadia.personal@local.test",
+          "phoneNumber": "+212600000000",
+          "address": "Rabat, Morocco",
+          "dateOfBirth": "1998-03-10T00:00:00Z",
+          "jobTitle": "HR Specialist",
+          "department": "Human Resources",
+          "managerProfileId": null,
+          "employmentType": "FullTime",
+          "hireDate": "2026-03-16T00:00:00Z",
+          "organizationRole": "HR Specialist",
+          "employmentStatus": "Active",
+          "accountId": "{{ _.account_id }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    afterResponseScript: |
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      const profileId = jsonBody.id || jsonBody.profileId || jsonBody.Id || jsonBody.ProfileId || "";
+      if (profileId) {
+        insomnia.environment.set("profile_id", profileId);
+      }
+
+  - _id: req_update_profile
+    _type: request
+    parentId: fld_profile_command
+    name: Update Profile
+    method: PUT
+    url: "{{ _.profile_command_base_url }}/api/profiles/{{ _.profile_id }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "employeeNumber": "EMP-1001",
+          "firstName": "Nadia",
+          "lastName": "Bennani Updated",
+          "workEmail": "nadia.bennani@workforcehub.local",
+          "personalEmail": "nadia.personal@local.test",
+          "phoneNumber": "+212611111111",
+          "address": "Casablanca, Morocco",
+          "dateOfBirth": "1998-03-10T00:00:00Z",
+          "jobTitle": "HR Specialist",
+          "department": "Human Resources",
+          "managerProfileId": null,
+          "employmentType": "FullTime",
+          "hireDate": "2026-03-16T00:00:00Z",
+          "organizationRole": "HR Specialist"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_update_profile_employment
+    _type: request
+    parentId: fld_profile_command
+    name: Update Employment
+    method: PATCH
+    url: "{{ _.profile_command_base_url }}/api/profiles/{{ _.profile_id }}/employment"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "jobTitle": "HR Manager",
+          "department": "Human Resources",
+          "managerProfileId": null,
+          "employmentType": "FullTime",
+          "hireDate": "2026-03-16T00:00:00Z",
+          "organizationRole": "HR Manager"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_update_profile_status
+    _type: request
+    parentId: fld_profile_command
+    name: Update Status
+    method: PATCH
+    url: "{{ _.profile_command_base_url }}/api/profiles/{{ _.profile_id }}/status"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "employmentStatus": "OnLeave"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_link_profile_account
+    _type: request
+    parentId: fld_profile_command
+    name: Link Account
+    method: POST
+    url: "{{ _.profile_command_base_url }}/api/profiles/{{ _.profile_id }}/link-account"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "accountId": "{{ _.account_id }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_update_self_personal_info
+    _type: request
+    parentId: fld_profile_command
+    name: Update Self Personal Info
+    method: PATCH
+    url: "{{ _.profile_command_base_url }}/api/profiles/self/personal-info"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "personalEmail": "nadia.self@local.test",
+          "phoneNumber": "+212622222222",
+          "address": "Marrakech, Morocco",
+          "dateOfBirth": "1998-03-10T00:00:00Z"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_delete_profile
+    _type: request
+    parentId: fld_profile_command
+    name: Delete Profile
+    method: DELETE
+    url: "{{ _.profile_command_base_url }}/api/profiles/{{ _.profile_id }}"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_profiles
+    _type: request
+    parentId: fld_profile_query
+    name: Get All Profiles
+    method: GET
+    url: "{{ _.profile_query_base_url }}/api/profiles"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_profile_by_id
+    _type: request
+    parentId: fld_profile_query
+    name: Get Profile By Id
+    method: GET
+    url: "{{ _.profile_query_base_url }}/api/profiles/{{ _.profile_id }}"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_profile_by_account
+    _type: request
+    parentId: fld_profile_query
+    name: Get Profile By Account
+    method: GET
+    url: "{{ _.profile_query_base_url }}/api/profiles/by-account/{{ _.account_id }}"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_self_profile
+    _type: request
+    parentId: fld_profile_query
+    name: Get Self Profile
+    method: GET
+    url: "{{ _.profile_query_base_url }}/api/profiles/self"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"

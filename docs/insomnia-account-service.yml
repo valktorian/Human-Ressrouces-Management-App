@@ -1,47 +1,47 @@
 _type: export
 __export_format: 4
-__export_date: 2026-03-16T12:00:00.000Z
+__export_date: 2026-03-17T00:00:00.000Z
 __export_source: codex.workforcehub
 resources:
-  - _id: wrk_workforcehub_account
+  - _id: wrk_account_service
     _type: workspace
-    name: WorkForceHub AccountService
-    description: AccountService command/query routes with JWT login flow.
+    name: Account Service
+    description: AccountService requests with local environment and shared JWT token workflow.
     scope: collection
 
-  - _id: env_workforcehub_account
+  - _id: env_account_service
     _type: environment
-    parentId: wrk_workforcehub_account
+    parentId: wrk_account_service
     name: Local
     data:
-      command_base_url: http://localhost:5222
-      query_base_url: http://localhost:5115
+      account_command_base_url: http://localhost:5222
+      account_query_base_url: http://localhost:5115
       account_id: 11111111-1111-1111-1111-111111111111
       jwt_token: ""
       email: nadia.bennani@local.test
       password: P@ssw0rd123!
 
-  - _id: fld_auth
+  - _id: fld_account_auth
     _type: request_group
-    parentId: wrk_workforcehub_account
+    parentId: wrk_account_service
     name: Auth
 
-  - _id: fld_command
+  - _id: fld_account_command
     _type: request_group
-    parentId: wrk_workforcehub_account
+    parentId: wrk_account_service
     name: Command
 
-  - _id: fld_query
+  - _id: fld_account_query
     _type: request_group
-    parentId: wrk_workforcehub_account
+    parentId: wrk_account_service
     name: Query
 
   - _id: req_login
     _type: request
-    parentId: fld_auth
+    parentId: fld_account_auth
     name: Login
     method: POST
-    url: "{{ _.command_base_url }}/api/auth/login"
+    url: "{{ _.account_command_base_url }}/api/auth/login"
     body:
       mimeType: application/json
       text: |
@@ -53,9 +53,24 @@ resources:
       - name: Content-Type
         value: application/json
     afterResponseScript: |
-      const jsonBody = insomnia.response.json();
-      insomnia.environment.set("jwt_token", jsonBody.accessToken);
-      insomnia.environment.set("account_id", jsonBody.accountId);
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      const accessToken = jsonBody.accessToken || jsonBody.AccessToken || "";
+      const accountId = jsonBody.accountId || jsonBody.AccountId || "";
+      const email = jsonBody.email || jsonBody.Email || "";
+      if (accessToken) {
+        insomnia.environment.set("jwt_token", accessToken);
+      }
+      if (accountId) {
+        insomnia.environment.set("account_id", accountId);
+      }
+      if (email) {
+        insomnia.environment.set("email", email);
+      }
     settingStoreCookies: true
     settingSendCookies: true
     settingDisableRenderRequestBody: false
@@ -65,10 +80,10 @@ resources:
 
   - _id: req_create_account
     _type: request
-    parentId: fld_command
+    parentId: fld_account_command
     name: Create Account
     method: POST
-    url: "{{ _.command_base_url }}/api/accounts"
+    url: "{{ _.account_command_base_url }}/api/accounts"
     body:
       mimeType: application/json
       text: |
@@ -83,9 +98,18 @@ resources:
       - name: Content-Type
         value: application/json
     afterResponseScript: |
-      const jsonBody = insomnia.response.json();
-      insomnia.environment.set("account_id", jsonBody.accountId);
-      insomnia.environment.set("email", jsonBody.email);
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      if (jsonBody.accountId) {
+        insomnia.environment.set("account_id", jsonBody.accountId);
+      }
+      if (jsonBody.email) {
+        insomnia.environment.set("email", jsonBody.email);
+      }
     settingStoreCookies: true
     settingSendCookies: true
     settingDisableRenderRequestBody: false
@@ -95,10 +119,10 @@ resources:
 
   - _id: req_update_account
     _type: request
-    parentId: fld_command
+    parentId: fld_account_command
     name: Update Account
     method: PUT
-    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}"
+    url: "{{ _.account_command_base_url }}/api/accounts/{{ _.account_id }}"
     body:
       mimeType: application/json
       text: |
@@ -110,6 +134,8 @@ resources:
     headers:
       - name: Content-Type
         value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
     authentication:
       type: bearer
       token: "{{ _.jwt_token }}"
@@ -122,10 +148,10 @@ resources:
 
   - _id: req_update_role
     _type: request
-    parentId: fld_command
+    parentId: fld_account_command
     name: Update Account Role
     method: PATCH
-    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}/role"
+    url: "{{ _.account_command_base_url }}/api/accounts/{{ _.account_id }}/role"
     body:
       mimeType: application/json
       text: |
@@ -135,6 +161,8 @@ resources:
     headers:
       - name: Content-Type
         value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
     authentication:
       type: bearer
       token: "{{ _.jwt_token }}"
@@ -147,10 +175,10 @@ resources:
 
   - _id: req_change_password
     _type: request
-    parentId: fld_command
+    parentId: fld_account_command
     name: Change Account Password
     method: PATCH
-    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}/password"
+    url: "{{ _.account_command_base_url }}/api/accounts/{{ _.account_id }}/password"
     body:
       mimeType: application/json
       text: |
@@ -160,6 +188,8 @@ resources:
     headers:
       - name: Content-Type
         value: application/json
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
     authentication:
       type: bearer
       token: "{{ _.jwt_token }}"
@@ -172,10 +202,13 @@ resources:
 
   - _id: req_delete_account
     _type: request
-    parentId: fld_command
+    parentId: fld_account_command
     name: Delete Account
     method: DELETE
-    url: "{{ _.command_base_url }}/api/accounts/{{ _.account_id }}"
+    url: "{{ _.account_command_base_url }}/api/accounts/{{ _.account_id }}"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
     authentication:
       type: bearer
       token: "{{ _.jwt_token }}"
@@ -188,10 +221,13 @@ resources:
 
   - _id: req_get_accounts
     _type: request
-    parentId: fld_query
+    parentId: fld_account_query
     name: Get All Accounts
     method: GET
-    url: "{{ _.query_base_url }}/api/accounts"
+    url: "{{ _.account_query_base_url }}/api/accounts"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
     authentication:
       type: bearer
       token: "{{ _.jwt_token }}"
@@ -204,10 +240,13 @@ resources:
 
   - _id: req_get_account_by_id
     _type: request
-    parentId: fld_query
+    parentId: fld_account_query
     name: Get Account By Id
     method: GET
-    url: "{{ _.query_base_url }}/api/accounts/{{ _.account_id }}"
+    url: "{{ _.account_query_base_url }}/api/accounts/{{ _.account_id }}"
+    headers:
+      - name: Authorization
+        value: Bearer {{ _.jwt_token }}
     authentication:
       type: bearer
       token: "{{ _.jwt_token }}"
