@@ -32,8 +32,8 @@ public static class ServiceCollectionExtensions
             var kafkaConfig = configuration.GetSection("Kafka");
             return new KafkaConsumer(
                 kafkaConfig["BootstrapServers"]!,
-                kafkaConfig["Topic"] ?? "hrm-events",
-                kafkaConfig["GroupId"] ?? "hrm-consumer-group",
+                kafkaConfig["Topic"] ?? "workforcehub-events",
+                kafkaConfig["GroupId"] ?? "workforcehub-consumer-group",
                 logger
             );
         });

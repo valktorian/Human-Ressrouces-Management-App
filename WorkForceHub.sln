@@ -93,7 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Query", "Query", "{6726FDAD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Query", "Query", "{BDC800B2-BD00-4D89-87FE-4D35BBE960C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkForceHub.Gateway", "HrmApp.Gateway\HrmApp.Gateway.csproj", "{3345847F-1C53-4CCD-9292-C49B7FAC444C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkForceHub.Gateway", "WorkForceHub.Gateway\WorkForceHub.Gateway.csproj", "{3345847F-1C53-4CCD-9292-C49B7FAC444C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

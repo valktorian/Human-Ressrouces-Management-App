@@ -128,7 +128,7 @@ services:
   workforcehub-gateway:
     build:
       context: .
-      dockerfile: HrmApp.Gateway/Dockerfile
+      dockerfile: WorkForceHub.Gateway/Dockerfile
     container_name: workforcehub-gateway
     ports:
       - "5000:80"

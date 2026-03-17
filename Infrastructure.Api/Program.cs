@@ -9,8 +9,8 @@ var configuration = builder.Configuration;
 var kafkaSection = configuration.GetSection("Kafka");
 
 var bootstrapServers = kafkaSection["BootstrapServers"] ?? "localhost:9092";
-var topic = kafkaSection["Topic"] ?? "hrm-events";
-var groupId = kafkaSection["GroupId"] ?? "hrm-consumer-group";
+var topic = kafkaSection["Topic"] ?? "workforcehub-events";
+var groupId = kafkaSection["GroupId"] ?? "workforcehub-consumer-group";
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
