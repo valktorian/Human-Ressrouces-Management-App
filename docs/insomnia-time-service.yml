@@ -1,0 +1,427 @@
+_type: export
+__export_format: 4
+__export_date: 2026-03-17T00:00:00.000Z
+__export_source: codex.workforcehub
+resources:
+  - _id: wrk_time_service
+    _type: workspace
+    name: Time Service
+    description: TimeService command and query requests with shared JWT login workflow.
+    scope: collection
+
+  - _id: env_time_service
+    _type: environment
+    parentId: wrk_time_service
+    name: Local
+    data:
+      account_command_base_url: http://localhost:5222
+      time_command_base_url: http://localhost:5033
+      time_query_base_url: http://localhost:5257
+      employee_id: 11111111-1111-1111-1111-111111111111
+      time_entry_id: 11111111-1111-1111-1111-111111111111
+      timesheet_id: 11111111-1111-1111-1111-111111111111
+      leave_request_id: 11111111-1111-1111-1111-111111111111
+      jwt_token: ""
+      email: john.doe@local.test
+      password: P@ssw0rd123!
+
+  - _id: fld_time_auth
+    _type: request_group
+    parentId: wrk_time_service
+    name: Auth
+
+  - _id: fld_time_entries_command
+    _type: request_group
+    parentId: wrk_time_service
+    name: Time Entries Command
+
+  - _id: fld_timesheets_command
+    _type: request_group
+    parentId: wrk_time_service
+    name: Timesheets Command
+
+  - _id: fld_leave_command
+    _type: request_group
+    parentId: wrk_time_service
+    name: Leave Command
+
+  - _id: fld_time_entries_query
+    _type: request_group
+    parentId: wrk_time_service
+    name: Time Entries Query
+
+  - _id: fld_timesheets_query
+    _type: request_group
+    parentId: wrk_time_service
+    name: Timesheets Query
+
+  - _id: fld_leave_query
+    _type: request_group
+    parentId: wrk_time_service
+    name: Leave Query
+
+  - _id: fld_reference_query
+    _type: request_group
+    parentId: wrk_time_service
+    name: Reference Query
+
+  - _id: req_time_login
+    _type: request
+    parentId: fld_time_auth
+    name: Login
+    method: POST
+    url: "{{ _.account_command_base_url }}/api/auth/login"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "email": "{{ _.email }}",
+          "password": "{{ _.password }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    afterResponseScript: |
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      const accessToken = jsonBody.accessToken || jsonBody.AccessToken || "";
+      const employeeId = jsonBody.accountId || jsonBody.AccountId || "";
+      if (accessToken) {
+        insomnia.environment.set("jwt_token", accessToken);
+      }
+      if (employeeId) {
+        insomnia.environment.set("employee_id", employeeId);
+      }
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+
+  - _id: req_create_time_entry
+    _type: request
+    parentId: fld_time_entries_command
+    name: Create Time Entry
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/time-entries"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "employeeId": "{{ _.employee_id }}",
+          "workDate": "2026-03-17",
+          "startTime": "09:00:00",
+          "endTime": "17:00:00",
+          "projectCode": "HRM",
+          "taskCode": "TIMESHEET",
+          "notes": "Worked on planning"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    afterResponseScript: |
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      if (jsonBody.id) {
+        insomnia.environment.set("time_entry_id", jsonBody.id);
+      }
+
+  - _id: req_update_time_entry
+    _type: request
+    parentId: fld_time_entries_command
+    name: Update Time Entry
+    method: PUT
+    url: "{{ _.time_command_base_url }}/api/time-entries/{{ _.time_entry_id }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "workDate": "2026-03-17",
+          "startTime": "08:30:00",
+          "endTime": "17:30:00",
+          "projectCode": "HRM",
+          "taskCode": "PLANNING",
+          "notes": "Updated entry"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_delete_time_entry
+    _type: request
+    parentId: fld_time_entries_command
+    name: Delete Time Entry
+    method: DELETE
+    url: "{{ _.time_command_base_url }}/api/time-entries/{{ _.time_entry_id }}"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_create_timesheet
+    _type: request
+    parentId: fld_timesheets_command
+    name: Create Timesheet
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/timesheets"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "employeeId": "{{ _.employee_id }}",
+          "periodStart": "2026-03-10",
+          "periodEnd": "2026-03-17"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    afterResponseScript: |
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      if (jsonBody.id) {
+        insomnia.environment.set("timesheet_id", jsonBody.id);
+      }
+
+  - _id: req_submit_timesheet
+    _type: request
+    parentId: fld_timesheets_command
+    name: Submit Timesheet
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/timesheets/{{ _.timesheet_id }}/submit"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_approve_timesheet
+    _type: request
+    parentId: fld_timesheets_command
+    name: Approve Timesheet
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/timesheets/{{ _.timesheet_id }}/approve"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "comment": "Approved"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_create_leave_request
+    _type: request
+    parentId: fld_leave_command
+    name: Create Leave Request
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/leave-requests"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "employeeId": "{{ _.employee_id }}",
+          "leaveType": "Annual",
+          "startDate": "2026-04-10",
+          "endDate": "2026-04-12",
+          "reason": "Travel"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+    afterResponseScript: |
+      let jsonBody = {};
+      try {
+        jsonBody = insomnia.response.json() || {};
+      } catch (error) {
+        return;
+      }
+      if (jsonBody.id) {
+        insomnia.environment.set("leave_request_id", jsonBody.id);
+      }
+
+  - _id: req_submit_leave_request
+    _type: request
+    parentId: fld_leave_command
+    name: Submit Leave Request
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/leave-requests/{{ _.leave_request_id }}/submit"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_adjust_leave_balance
+    _type: request
+    parentId: fld_leave_command
+    name: Adjust Leave Balance
+    method: POST
+    url: "{{ _.time_command_base_url }}/api/leave-balances/{{ _.employee_id }}/adjust"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "leaveType": "Annual",
+          "delta": 2,
+          "reason": "Manual carry-over"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_time_entries
+    _type: request
+    parentId: fld_time_entries_query
+    name: Get All Time Entries
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/time-entries?pageNumber=1&pageSize=20"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_time_entry_by_id
+    _type: request
+    parentId: fld_time_entries_query
+    name: Get Time Entry By Id
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/time-entries/{{ _.time_entry_id }}"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_time_entries_by_employee
+    _type: request
+    parentId: fld_time_entries_query
+    name: Get Time Entries By Employee
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/time-entries/by-employee/{{ _.employee_id }}?from=2026-03-01&to=2026-03-31"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_self_time_entries
+    _type: request
+    parentId: fld_time_entries_query
+    name: Get Self Time Entries
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/time-entries/self?from=2026-03-01&to=2026-03-31"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_timesheets
+    _type: request
+    parentId: fld_timesheets_query
+    name: Get All Timesheets
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/timesheets?pageNumber=1&pageSize=20"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_pending_timesheets
+    _type: request
+    parentId: fld_timesheets_query
+    name: Get Pending Timesheets
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/timesheets/pending-approval?pageNumber=1&pageSize=20"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_self_timesheets
+    _type: request
+    parentId: fld_timesheets_query
+    name: Get Self Timesheets
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/timesheets/self?periodStart=2026-03-01&periodEnd=2026-03-15"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_leave_requests
+    _type: request
+    parentId: fld_leave_query
+    name: Get All Leave Requests
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/leave-requests?pageNumber=1&pageSize=20"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_pending_leave_requests
+    _type: request
+    parentId: fld_leave_query
+    name: Get Pending Leave Requests
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/leave-requests/pending-approval?pageNumber=1&pageSize=20"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_self_leave_requests
+    _type: request
+    parentId: fld_leave_query
+    name: Get Self Leave Requests
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/leave-requests/self"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_leave_balance_self
+    _type: request
+    parentId: fld_leave_query
+    name: Get Self Leave Balance
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/leave-balances/self"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_holidays
+    _type: request
+    parentId: fld_reference_query
+    name: Get Holidays
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/holidays?year=2026&country=MA"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"
+
+  - _id: req_get_leave_types
+    _type: request
+    parentId: fld_reference_query
+    name: Get Leave Types
+    method: GET
+    url: "{{ _.time_query_base_url }}/api/leave-types"
+    authentication:
+      type: bearer
+      token: "{{ _.jwt_token }}"

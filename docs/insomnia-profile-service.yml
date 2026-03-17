@@ -20,7 +20,7 @@ resources:
       account_id: 11111111-1111-1111-1111-111111111111
       profile_id: 11111111-1111-1111-1111-111111111111
       jwt_token: ""
-      email: nadia.bennani@local.test
+      email: john.doe@local.test
       password: P@ssw0rd123!
 
   - _id: fld_profile_auth
@@ -91,10 +91,10 @@ resources:
       text: |
         {
           "employeeNumber": "EMP-1001",
-          "firstName": "Nadia",
-          "lastName": "Bennani",
-          "workEmail": "nadia.bennani@workforcehub.local",
-          "personalEmail": "nadia.personal@local.test",
+          "firstName": "John",
+          "lastName": "Doe",
+          "workEmail": "john.doe@workforcehub.local",
+          "personalEmail": "john.personal@local.test",
           "phoneNumber": "+212600000000",
           "address": "Rabat, Morocco",
           "dateOfBirth": "1998-03-10T00:00:00Z",
@@ -138,10 +138,10 @@ resources:
       text: |
         {
           "employeeNumber": "EMP-1001",
-          "firstName": "Nadia",
-          "lastName": "Bennani Updated",
-          "workEmail": "nadia.bennani@workforcehub.local",
-          "personalEmail": "nadia.personal@local.test",
+          "firstName": "John",
+          "lastName": "Doe Updated",
+          "workEmail": "john.doe@workforcehub.local",
+          "personalEmail": "john.personal@local.test",
           "phoneNumber": "+212611111111",
           "address": "Casablanca, Morocco",
           "dateOfBirth": "1998-03-10T00:00:00Z",
@@ -239,7 +239,7 @@ resources:
       mimeType: application/json
       text: |
         {
-          "personalEmail": "nadia.self@local.test",
+          "personalEmail": "john.self@local.test",
           "phoneNumber": "+212622222222",
           "address": "Marrakech, Morocco",
           "dateOfBirth": "1998-03-10T00:00:00Z"

@@ -18,7 +18,7 @@ resources:
       account_query_base_url: http://localhost:5115
       account_id: 11111111-1111-1111-1111-111111111111
       jwt_token: ""
-      email: nadia.bennani@local.test
+      email: john.doe@local.test
       password: P@ssw0rd123!
 
   - _id: fld_account_auth
@@ -90,8 +90,8 @@ resources:
         {
           "email": "{{ _.email }}",
           "password": "{{ _.password }}",
-          "firstName": "Nadia",
-          "lastName": "Bennani",
+          "firstName": "John",
+          "lastName": "Doe",
           "role": "HRAdmin"
         }
     headers:
@@ -128,8 +128,8 @@ resources:
       text: |
         {
           "email": "{{ _.email }}",
-          "firstName": "Nadia Updated",
-          "lastName": "Bennani Updated"
+          "firstName": "John Updated",
+          "lastName": "Doe Updated"
         }
     headers:
       - name: Content-Type
