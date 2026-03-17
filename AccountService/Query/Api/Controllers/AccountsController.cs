@@ -4,7 +4,6 @@ using Infrastructure.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace AccountService.Query.Api.Controllers;
 
@@ -26,14 +25,27 @@ public class AccountsController : ControllerBase
     /// Get all accounts from MongoDB read model
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(BaseResponse<List<AccountReadModel>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BaseResponse<PagedResult<AccountReadModel>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetAllAccounts()
+    public async Task<IActionResult> GetAllAccounts([FromQuery] PaginationRequest pagination, CancellationToken ct)
     {
         try
         {
-            var accounts = await _readDb.Accounts.Find(_ => true).ToListAsync();
-            return Ok(BaseResponse<List<AccountReadModel>>.Ok(accounts));
+            var totalCount = await _readDb.Accounts.CountDocumentsAsync(FilterDefinition<AccountReadModel>.Empty, cancellationToken: ct);
+            var accounts = await _readDb.Accounts
+                .Find(_ => true)
+                .SortByDescending(x => x.CreatedAt)
+                .Skip(pagination.Skip)
+                .Limit(pagination.NormalizedPageSize)
+                .ToListAsync(ct);
+
+            var result = PagedResult<AccountReadModel>.Create(
+                accounts,
+                pagination.NormalizedPageNumber,
+                pagination.NormalizedPageSize,
+                totalCount);
+
+            return Ok(BaseResponse<PagedResult<AccountReadModel>>.Ok(result));
         }
         catch (Exception ex)
         {
