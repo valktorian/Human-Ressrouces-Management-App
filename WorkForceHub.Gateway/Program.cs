@@ -54,8 +54,10 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
     {
         ("Account Command", "http://host.docker.internal:5222/swagger/v1/swagger.json"),
         ("Account Query", "http://host.docker.internal:5115/swagger/v1/swagger.json"),
-        ("Profile Command", "http://host.docker.internal:5001/swagger/v1/swagger.json"),
-        ("Profile Query", "http://host.docker.internal:5004/swagger/v1/swagger.json")
+        ("Profile Command", "http://host.docker.internal:5062/swagger/v1/swagger.json"),
+        ("Profile Query", "http://host.docker.internal:5003/swagger/v1/swagger.json"),
+        ("Time Command", "http://host.docker.internal:5033/swagger/v1/swagger.json"),
+        ("Time Query", "http://host.docker.internal:5257/swagger/v1/swagger.json")
     };
 
     var merged = new JsonObject
@@ -194,6 +196,8 @@ app.MapGet("/docs", () => Results.Content(
         <li><a href="/docs/account-query/index.html">Account Query Swagger</a></li>
         <li><a href="/docs/profile-command/index.html">Profile Command Swagger</a></li>
         <li><a href="/docs/profile-query/index.html">Profile Query Swagger</a></li>
+        <li><a href="/docs/time-command/index.html">Time Command Swagger</a></li>
+        <li><a href="/docs/time-query/index.html">Time Query Swagger</a></li>
       </ul>
       <p>Gateway base URL: <code>http://localhost:5000</code></p>
     </body>
