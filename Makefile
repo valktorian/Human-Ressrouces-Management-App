@@ -7,7 +7,7 @@ up:
 	$(MAKE) init-dbs
 
 up-min:
-	@echo " Starting infrastructure only (postgres, mongo, kafka, admin tools)..."
+	@echo " Starting minimal stack (postgres, mongo, kafka, admin tools, gateway)..."
 	docker compose -f docker-compose.yml --profile minimal up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs

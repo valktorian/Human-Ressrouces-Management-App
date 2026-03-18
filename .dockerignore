@@ -1,0 +1,13 @@
+.git
+.gitignore
+.vs
+.vscode
+**/bin
+**/obj
+**/.idea
+**/*.user
+**/*.suo
+**/*.cache
+**/node_modules
+README.md
+docs

@@ -136,16 +136,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:80
       - GatewayMode=Docker
-    depends_on:
-      - account-service-command
-      - account-service-query
-      - profile-service-command
-      - profile-service-query
-      - time-service-command
-      - time-service-query
-      - evolution-service-command
-      - evolution-service-query
     profiles:
+      - minimal
       - full
 
   account-service-command:
