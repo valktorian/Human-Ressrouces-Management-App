@@ -10,9 +10,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
 builder.Services.AddWorkForceHubSwagger("WorkForceHub Time Command API");
+builder.Services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
 builder.Services.AddHandlersFromAssemblies(typeof(CreateTimeEntryHandler).Assembly);
+builder.Services.AddSingleton<IKafkaProducer>(sp =>
+{
+    var bootstrapServers = builder.Configuration.GetSection("Kafka")["BootstrapServers"] ?? "localhost:29092";
+    var logger = sp.GetRequiredService<ILogger<KafkaProducer>>();
+    return new KafkaProducer(logger, bootstrapServers);
+});
 builder.Services.AddScoped<ICommandHandler<CreateTimeEntryCommand, CommandAcceptedResponse>, CreateTimeEntryHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateTimeEntryCommand, CommandAcceptedResponse>, UpdateTimeEntryHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteTimeEntryCommand, CommandAcceptedResponse>, DeleteTimeEntryHandler>();

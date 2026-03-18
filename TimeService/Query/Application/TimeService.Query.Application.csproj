@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\TimeService.Query.Domain.csproj" />
+    <ProjectReference Include="..\Infrastructure\TimeService.Query.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure.Api\Infrastructure.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
