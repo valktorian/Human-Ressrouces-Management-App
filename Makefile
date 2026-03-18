@@ -2,8 +2,11 @@ COMPOSE_PROJECT_NAME := workforcehub
 COMPOSE := docker compose -p $(COMPOSE_PROJECT_NAME) -f docker-compose.yml
 CURRENT_DIR_PROJECT := $(shell basename "$(CURDIR)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
 CONTAINERS := workforcehub-gateway account-service-command account-service-query profile-service-command profile-service-query time-service-command time-service-query evolution-service-command evolution-service-query postgres_write mongo_read kafka adminer mongo_express kafka-ui
+POSTGRES_CONTAINER := postgres_write
+POSTGRES_WAIT_RETRIES ?= 30
+POSTGRES_WAIT_SECONDS ?= 2
 
-.PHONY: up up-min up-fresh down kafka logs clean init-dbs reset reset-dbs build-gateway rebuild-gateway
+.PHONY: up up-min up-fresh down kafka logs clean init-dbs wait-postgres reset reset-dbs build-gateway rebuild-gateway
 
 up:
 	@echo " Starting all services (full)..."
@@ -48,13 +51,28 @@ clean:
 	-docker network rm $(COMPOSE_PROJECT_NAME)_default $(CURRENT_DIR_PROJECT)_default hrmapp_default 2>/dev/null || true
 
 init-dbs:
+	@$(MAKE) wait-postgres
 	@echo " Ensuring account/profile/time/evolution databases exist..."
 	@for db in account_write profile_write time_write evolution_write; do \
-		if ! docker exec postgres_write psql -U admin -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$$db'" | grep -q 1; then \
+		if ! docker exec $(POSTGRES_CONTAINER) psql -U admin -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$$db'" | grep -q 1; then \
 			echo " Creating $$db..."; \
-			docker exec postgres_write psql -U admin -d postgres -c "CREATE DATABASE $$db"; \
+			docker exec $(POSTGRES_CONTAINER) psql -U admin -d postgres -c "CREATE DATABASE $$db"; \
 		fi; \
 	done
+
+wait-postgres:
+	@echo " Waiting for $(POSTGRES_CONTAINER) to accept connections..."
+	@attempt=1; \
+	until docker exec $(POSTGRES_CONTAINER) pg_isready -U admin -d postgres >/dev/null 2>&1; do \
+		if [ $$attempt -ge $(POSTGRES_WAIT_RETRIES) ]; then \
+			echo " Postgres did not become ready in time."; \
+			exit 1; \
+		fi; \
+		echo " Postgres not ready yet ($$attempt/$(POSTGRES_WAIT_RETRIES)); retrying in $(POSTGRES_WAIT_SECONDS)s..."; \
+		attempt=$$((attempt + 1)); \
+		sleep $(POSTGRES_WAIT_SECONDS); \
+	done
+	@echo " Postgres is ready."
 
 reset-dbs:
 	@echo " Dropping and recreating account/profile/time/evolution databases..."

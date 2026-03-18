@@ -6,6 +6,7 @@ using ProfileService.Command.Application.Commands;
 using ProfileService.Command.Application.DTOs;
 using ProfileService.Command.Application.Handlers;
 using ProfileService.Command.Infrastructure;
+using ProfileService.Command.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,8 @@ builder.Services.AddScoped<ICommandHandler<DeleteProfileCommand, bool>, DeletePr
 builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 
 var app = builder.Build();
+
+await app.ApplyMigrationsAsync<ProfileCommandDbContext>();
 
 if (app.Environment.IsDevelopment())
 {

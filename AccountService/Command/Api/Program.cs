@@ -10,6 +10,7 @@ using Infrastructure.Api.Extensions;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
 using Microsoft.AspNetCore.Identity;
+using AccountService.Command.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ builder.Services.AddScoped<ICommandHandler<DeleteAccountCommand, bool>, DeleteAc
 builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 
 var app = builder.Build();
+
+await app.ApplyMigrationsAsync<AccountCommandDbContext>();
 
 if (app.Environment.IsDevelopment())
 {
