@@ -1,37 +1,40 @@
+COMPOSE_PROJECT_NAME := workforcehub
+COMPOSE := docker compose -p $(COMPOSE_PROJECT_NAME) -f docker-compose.yml
+
 .PHONY: up up-min up-fresh down kafka logs clean init-dbs reset build-gateway rebuild-gateway
 
 up:
 	@echo " Starting all services (full)..."
-	docker compose -f docker-compose.yml --profile full up -d
+	$(COMPOSE) --profile full up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs
 
 up-min:
 	@echo " Starting minimal stack (postgres, mongo, kafka, admin tools, gateway)..."
-	docker compose -f docker-compose.yml --profile minimal up -d
+	$(COMPOSE) --profile minimal up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs
 
 up-fresh: rebuild-gateway
 	@echo " Starting full stack with a freshly rebuilt gateway..."
-	docker compose -f docker-compose.yml --profile full up -d
+	$(COMPOSE) --profile full up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs
 
 down:
 	@echo " Stopping containers..."
-	docker compose -f docker-compose.yml down
+	$(COMPOSE) down
 
 kafka:
 	@echo " Starting Kafka only..."
-	docker compose -f docker-compose.yml up -d kafka
+	$(COMPOSE) up -d kafka
 
 logs:
-	@docker compose logs -f
+	@$(COMPOSE) logs -f
 
 clean:
 	@echo " Removing all volumes..."
-	docker compose down -v
+	$(COMPOSE) down -v
 
 init-dbs:
 	@echo " Ensuring account/profile/time/evolution databases exist..."
@@ -39,15 +42,15 @@ init-dbs:
 
 build-gateway:
 	@echo " Building workforcehub-gateway image..."
-	docker compose -f docker-compose.yml --profile full build workforcehub-gateway
+	$(COMPOSE) --profile full build workforcehub-gateway
 
 rebuild-gateway:
 	@echo " Rebuilding and recreating workforcehub-gateway..."
-	docker compose -f docker-compose.yml --profile full build --no-cache workforcehub-gateway
-	docker compose -f docker-compose.yml --profile full up -d --force-recreate workforcehub-gateway
+	$(COMPOSE) --profile full build --no-cache workforcehub-gateway
+	$(COMPOSE) --profile full up -d --force-recreate workforcehub-gateway
 
 reset:
 	@echo " Recreating containers and volumes from scratch..."
-	docker compose -f docker-compose.yml down -v
-	docker compose -f docker-compose.yml --profile full up -d
+	$(COMPOSE) down -v
+	$(COMPOSE) --profile full up -d
 	$(MAKE) init-dbs
