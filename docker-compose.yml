@@ -133,14 +133,19 @@ services:
     ports:
       - "5000:80"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:80
+      - GatewayMode=Docker
     depends_on:
-      - postgres_write
-      - mongo_read
-      - kafka
+      - account-service-command
+      - account-service-query
+      - profile-service-command
+      - profile-service-query
+      - time-service-command
+      - time-service-query
+      - evolution-service-command
+      - evolution-service-query
     profiles:
-      - minimal
       - full
 
   account-service-command:

@@ -7,8 +7,12 @@ using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ocelot.json
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+var gatewayMode = builder.Configuration["GatewayMode"] ?? builder.Environment.EnvironmentName;
+var ocelotFileName = gatewayMode.Equals("Docker", StringComparison.OrdinalIgnoreCase)
+    ? "ocelot.docker.json"
+    : "ocelot.json";
+
+builder.Configuration.AddJsonFile(ocelotFileName, optional: false, reloadOnChange: true);
 
 
 builder.Services.AddHttpClient();
@@ -33,6 +37,10 @@ builder.Services.AddOcelot(builder.Configuration);
 
 var app = builder.Build();
 
+var swaggerSources = builder.Configuration
+    .GetSection("SwaggerSources")
+    .Get<Dictionary<string, string[]>>() ?? new Dictionary<string, string[]>();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 
@@ -43,7 +51,14 @@ app.Map("/swagger", swaggerApp =>
     swaggerApp.UseSwaggerUI(options =>
     {
         options.RoutePrefix = string.Empty;
-        options.SwaggerEndpoint("/gateway-docs/v1/openapi.json", "WorkForceHub API");
+        options.DocumentTitle = "WorkForceHub API Docs";
+        options.SwaggerEndpoint("/gateway-docs/v1/openapi.json", "WorkForceHub Unified");
+        options.SwaggerEndpoint("/gateway-docs/account-command/openapi.json", "Account Command");
+        options.SwaggerEndpoint("/gateway-docs/account-query/openapi.json", "Account Query");
+        options.SwaggerEndpoint("/gateway-docs/profile-command/openapi.json", "Profile Command");
+        options.SwaggerEndpoint("/gateway-docs/profile-query/openapi.json", "Profile Query");
+        options.SwaggerEndpoint("/gateway-docs/time-command/openapi.json", "Time Command");
+        options.SwaggerEndpoint("/gateway-docs/time-query/openapi.json", "Time Query");
     });
 });
 
@@ -52,12 +67,12 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
     var client = httpClientFactory.CreateClient();
     var sources = new[]
     {
-        ("Account Command", "http://host.docker.internal:5222/swagger/v1/swagger.json"),
-        ("Account Query", "http://host.docker.internal:5115/swagger/v1/swagger.json"),
-        ("Profile Command", "http://host.docker.internal:5062/swagger/v1/swagger.json"),
-        ("Profile Query", "http://host.docker.internal:5003/swagger/v1/swagger.json"),
-        ("Time Command", "http://host.docker.internal:5033/swagger/v1/swagger.json"),
-        ("Time Query", "http://host.docker.internal:5257/swagger/v1/swagger.json")
+        ("Account Command", swaggerSources["account-command"]),
+        ("Account Query", swaggerSources["account-query"]),
+        ("Profile Command", swaggerSources["profile-command"]),
+        ("Profile Query", swaggerSources["profile-query"]),
+        ("Time Command", swaggerSources["time-command"]),
+        ("Time Query", swaggerSources["time-query"])
     };
 
     var merged = new JsonObject
@@ -67,7 +82,7 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
         {
             ["title"] = "WorkForceHub API",
             ["version"] = "v1",
-            ["description"] = "Aggregated gateway documentation for AccountService and ProfileService."
+            ["description"] = "Aggregated gateway documentation for all WorkForceHub services."
         },
         ["paths"] = new JsonObject(),
         ["components"] = new JsonObject
@@ -85,17 +100,14 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
     var mergedTags = merged["tags"]!.AsArray();
     var seenTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    foreach (var (serviceName, url) in sources)
+    foreach (var (serviceName, urls) in sources)
     {
         try
         {
-            using var response = await client.GetAsync(url, ct);
-            response.EnsureSuccessStatusCode();
-
-            var json = JsonNode.Parse(await response.Content.ReadAsStringAsync(ct))?.AsObject();
+            var json = await TryFetchSwaggerDocumentAsync(client, urls, ct);
             if (json is null)
             {
-                continue;
+                throw new InvalidOperationException($"Unable to fetch Swagger document for {serviceName}.");
             }
 
             if (json["paths"] is JsonObject paths)
@@ -170,6 +182,22 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
 
     return Results.Json(merged, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 });
+
+app.MapGet("/gateway-docs/{service}/openapi.json", async (string service, IHttpClientFactory httpClientFactory, CancellationToken ct) =>
+{
+    if (!swaggerSources.TryGetValue(service, out var urls))
+    {
+        return Results.NotFound(new { message = $"Unknown Swagger source '{service}'." });
+    }
+
+    var client = httpClientFactory.CreateClient();
+    var json = await TryFetchSwaggerDocumentAsync(client, urls, ct);
+
+    return json is null
+        ? Results.Problem($"Unable to fetch Swagger document for '{service}'.")
+        : Results.Json(json, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+});
+
 app.MapGet("/docs", () => Results.Content(
     """
     <!doctype html>
@@ -188,16 +216,16 @@ app.MapGet("/docs", () => Results.Content(
     </head>
     <body>
       <h1>WorkForceHub API Docs</h1>
-      <p>Single gateway entry point for the aggregated API documentation and proxied service docs.</p>
+      <p>Single gateway entry point for all service documentation.</p>
       <ul>
-        <li><a href="/swagger">Unified Swagger UI</a></li>
+        <li><a href="/swagger">Swagger UI (all services in one page)</a></li>
         <li><a href="/gateway-docs/v1/openapi.json">Unified OpenAPI JSON</a></li>
-        <li><a href="/docs/account-command/index.html">Account Command Swagger</a></li>
-        <li><a href="/docs/account-query/index.html">Account Query Swagger</a></li>
-        <li><a href="/docs/profile-command/index.html">Profile Command Swagger</a></li>
-        <li><a href="/docs/profile-query/index.html">Profile Query Swagger</a></li>
-        <li><a href="/docs/time-command/index.html">Time Command Swagger</a></li>
-        <li><a href="/docs/time-query/index.html">Time Query Swagger</a></li>
+        <li><a href="/gateway-docs/account-command/openapi.json">Account Command OpenAPI</a></li>
+        <li><a href="/gateway-docs/account-query/openapi.json">Account Query OpenAPI</a></li>
+        <li><a href="/gateway-docs/profile-command/openapi.json">Profile Command OpenAPI</a></li>
+        <li><a href="/gateway-docs/profile-query/openapi.json">Profile Query OpenAPI</a></li>
+        <li><a href="/gateway-docs/time-command/openapi.json">Time Command OpenAPI</a></li>
+        <li><a href="/gateway-docs/time-query/openapi.json">Time Query OpenAPI</a></li>
       </ul>
       <p>Gateway base URL: <code>http://localhost:5000</code></p>
     </body>
@@ -208,7 +236,34 @@ app.MapGet("/docs", () => Results.Content(
 app.MapWhen(
     context => !context.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase)
         && !context.Request.Path.StartsWithSegments("/gateway-docs", StringComparison.OrdinalIgnoreCase)
-        && !context.Request.Path.StartsWithSegments("/docs", StringComparison.OrdinalIgnoreCase),
+        && !context.Request.Path.Equals("/docs", StringComparison.OrdinalIgnoreCase)
+        && !context.Request.Path.Equals("/docs/", StringComparison.OrdinalIgnoreCase),
     branch => { branch.UseOcelot().GetAwaiter().GetResult(); });
 
 app.Run();
+
+static async Task<JsonObject?> TryFetchSwaggerDocumentAsync(HttpClient client, IEnumerable<string> urls, CancellationToken ct)
+{
+    foreach (var url in urls)
+    {
+        try
+        {
+            using var response = await client.GetAsync(url, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                continue;
+            }
+
+            var document = JsonNode.Parse(await response.Content.ReadAsStringAsync(ct))?.AsObject();
+            if (document is not null)
+            {
+                return document;
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    return null;
+}

@@ -1,18 +1,20 @@
-.PHONY: up up-min up-min-fresh down kafka logs clean init-dbs reset build-gateway rebuild-gateway
+.PHONY: up up-min up-fresh down kafka logs clean init-dbs reset build-gateway rebuild-gateway
 
 up:
 	@echo " Starting all services (full)..."
 	docker compose -f docker-compose.yml --profile full up -d
+	@echo " Ensuring per-service write databases exist..."
+	$(MAKE) init-dbs
 
 up-min:
-	@echo " Starting minimal services (postgres, mongo, kafka, gateway) without rebuilding images..."
+	@echo " Starting infrastructure only (postgres, mongo, kafka, admin tools)..."
 	docker compose -f docker-compose.yml --profile minimal up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs
 
-up-min-fresh: rebuild-gateway
-	@echo " Starting minimal services with a freshly rebuilt gateway..."
-	docker compose -f docker-compose.yml --profile minimal up -d
+up-fresh: rebuild-gateway
+	@echo " Starting full stack with a freshly rebuilt gateway..."
+	docker compose -f docker-compose.yml --profile full up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs
 
@@ -37,15 +39,15 @@ init-dbs:
 
 build-gateway:
 	@echo " Building workforcehub-gateway image..."
-	docker compose -f docker-compose.yml --profile minimal build workforcehub-gateway
+	docker compose -f docker-compose.yml --profile full build workforcehub-gateway
 
 rebuild-gateway:
 	@echo " Rebuilding and recreating workforcehub-gateway..."
-	docker compose -f docker-compose.yml --profile minimal build --no-cache workforcehub-gateway
-	docker compose -f docker-compose.yml --profile minimal up -d --force-recreate workforcehub-gateway
+	docker compose -f docker-compose.yml --profile full build --no-cache workforcehub-gateway
+	docker compose -f docker-compose.yml --profile full up -d --force-recreate workforcehub-gateway
 
 reset:
 	@echo " Recreating containers and volumes from scratch..."
 	docker compose -f docker-compose.yml down -v
-	docker compose -f docker-compose.yml --profile minimal up -d
+	docker compose -f docker-compose.yml --profile full up -d
 	$(MAKE) init-dbs

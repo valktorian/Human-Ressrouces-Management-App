@@ -1,84 +1,12 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/swagger/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5222
-        }
-      ],
-      "UpstreamPathTemplate": "/docs/account-command/{everything}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
-      "DownstreamPathTemplate": "/swagger/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5115
-        }
-      ],
-      "UpstreamPathTemplate": "/docs/account-query/{everything}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
-      "DownstreamPathTemplate": "/swagger/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5062
-        }
-      ],
-      "UpstreamPathTemplate": "/docs/profile-command/{everything}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
-      "DownstreamPathTemplate": "/swagger/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5003
-        }
-      ],
-      "UpstreamPathTemplate": "/docs/profile-query/{everything}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
-      "DownstreamPathTemplate": "/swagger/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5033
-        }
-      ],
-      "UpstreamPathTemplate": "/docs/time-command/{everything}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
-      "DownstreamPathTemplate": "/swagger/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5257
-        }
-      ],
-      "UpstreamPathTemplate": "/docs/time-query/{everything}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
       "DownstreamPathTemplate": "/api/auth/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5222
+          "Host": "account-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/auth/login",
@@ -89,8 +17,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5222
+          "Host": "account-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/accounts",
@@ -108,8 +36,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5115
+          "Host": "account-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/accounts",
@@ -120,8 +48,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5222
+          "Host": "account-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/accounts/{id}",
@@ -132,8 +60,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5222
+          "Host": "account-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/accounts/{id}/role",
@@ -144,8 +72,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5222
+          "Host": "account-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/accounts/{id}/password",
@@ -156,8 +84,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5115
+          "Host": "account-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/accounts/{everything}",
@@ -168,8 +96,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5062
+          "Host": "profile-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles",
@@ -180,8 +108,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5062
+          "Host": "profile-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles/{id}",
@@ -192,8 +120,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5062
+          "Host": "profile-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles/{id}/{everything}",
@@ -204,8 +132,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5062
+          "Host": "profile-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles/self/{everything}",
@@ -216,8 +144,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5003
+          "Host": "profile-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles",
@@ -228,8 +156,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5003
+          "Host": "profile-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles/self",
@@ -240,8 +168,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5003
+          "Host": "profile-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/profiles/{everything}",
@@ -252,8 +180,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/time-entries",
@@ -264,8 +192,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/time-entries/{id}",
@@ -276,8 +204,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/time-entries",
@@ -288,8 +216,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/time-entries/{everything}",
@@ -300,8 +228,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/timesheets",
@@ -312,8 +240,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/timesheets/{id}/{everything}",
@@ -324,8 +252,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/timesheets",
@@ -336,8 +264,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/timesheets/{everything}",
@@ -348,8 +276,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-requests",
@@ -360,8 +288,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-requests/{id}",
@@ -372,8 +300,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-requests/{id}/{everything}",
@@ -384,8 +312,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5033
+          "Host": "time-service-command",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-balances/{employeeId}/adjust",
@@ -396,8 +324,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-requests",
@@ -408,8 +336,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-requests/{everything}",
@@ -420,8 +348,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-balances/{everything}",
@@ -432,8 +360,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/holidays",
@@ -444,8 +372,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5257
+          "Host": "time-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/leave-types",
@@ -456,8 +384,8 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "host.docker.internal",
-          "Port": 5003
+          "Host": "evolution-service-query",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/api/evolution/{everything}",
