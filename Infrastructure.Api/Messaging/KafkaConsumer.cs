@@ -1,4 +1,5 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using System.Text.Json;
 
 namespace Infrastructure.Api.Messaging;
@@ -6,6 +7,7 @@ namespace Infrastructure.Api.Messaging;
 public class KafkaConsumer : BackgroundService
 {
     private readonly ILogger<KafkaConsumer> _logger;
+    private readonly string _bootstrapServers;
     private readonly string _topic;
     private readonly IConsumer<string, string> _consumer;
     private readonly Dictionary<string, Func<JsonElement, Task>> _eventHandlers;
@@ -13,6 +15,7 @@ public class KafkaConsumer : BackgroundService
     public KafkaConsumer(string bootstrapServers, string topic, string groupId, ILogger<KafkaConsumer> logger)
     {
         _logger = logger;
+        _bootstrapServers = bootstrapServers;
         _topic = topic;
         _eventHandlers = new Dictionary<string, Func<JsonElement, Task>>();
 
@@ -38,7 +41,6 @@ public class KafkaConsumer : BackgroundService
         _logger.LogInformation("Kafka consumer starting");
         try
         {
-            // Let the host finish starting before entering the blocking consume loop.
             await Task.Yield();
             _logger.LogInformation("About to call ConsumeEventsAsync");
             await ConsumeEventsAsync(stoppingToken);
@@ -56,6 +58,45 @@ public class KafkaConsumer : BackgroundService
         }
     }
 
+    private async Task EnsureTopicExistsAsync(CancellationToken cancellationToken)
+    {
+        using var admin = new AdminClientBuilder(new AdminClientConfig
+        {
+            BootstrapServers = _bootstrapServers
+        }).Build();
+
+        var metadata = admin.GetMetadata(TimeSpan.FromSeconds(5));
+        var exists = metadata.Topics.Any(t => t.Topic == _topic && t.Error.Code != ErrorCode.UnknownTopicOrPart);
+
+        if (exists)
+        {
+            return;
+        }
+
+        try
+        {
+            await admin.CreateTopicsAsync(new[]
+            {
+                new TopicSpecification
+                {
+                    Name = _topic,
+                    NumPartitions = 1,
+                    ReplicationFactor = 1
+                }
+            });
+
+            _logger.LogInformation("Created missing Kafka topic '{Topic}'", _topic);
+        }
+        catch (CreateTopicsException ex) when (ex.Results.All(r => r.Error.Code == ErrorCode.TopicAlreadyExists))
+        {
+            _logger.LogInformation("Kafka topic '{Topic}' already exists", _topic);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+    }
+
     private async Task ConsumeEventsAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("ConsumeEventsAsync started");
@@ -64,25 +105,26 @@ public class KafkaConsumer : BackgroundService
             _logger.LogInformation("Kafka consumer listening on '{Topic}'", _topic);
             try
             {
+                await EnsureTopicExistsAsync(stoppingToken);
                 _consumer.Subscribe(_topic);
                 _logger.LogInformation("Successfully subscribed to topic '{Topic}'", _topic);
             }
             catch (Exception subEx)
             {
                 _logger.LogError(subEx, "Failed to subscribe to topic '{Topic}'", _topic);
-                return; // Don't throw, let app continue without consumer
+                return;
             }
 
             _logger.LogInformation("About to enter message consumption loop");
-            _logger.LogInformation("   Stopping token cancelled? {IsCancelled}", stoppingToken.IsCancellationRequested);
+            _logger.LogInformation("Stopping token cancelled? {IsCancelled}", stoppingToken.IsCancellationRequested);
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    _logger.LogDebug(" Waiting for messages on topic '{Topic}'...", _topic);
+                    _logger.LogDebug("Waiting for messages on topic '{Topic}'...", _topic);
 
-                    ConsumeResult<string, string> result = null;
+                    ConsumeResult<string, string>? result;
                     try
                     {
                         result = _consumer.Consume(TimeSpan.FromSeconds(3));
@@ -95,12 +137,12 @@ public class KafkaConsumer : BackgroundService
 
                     if (result == null)
                     {
-                        _logger.LogDebug(" Timeout waiting for message");
+                        _logger.LogDebug("Timeout waiting for message");
                         continue;
                     }
 
-                    _logger.LogInformation("   RECEIVED MESSAGE from Kafka:");
-                    _logger.LogInformation("   Raw JSON: {RawJson}", result.Message.Value);
+                    _logger.LogInformation("RECEIVED MESSAGE from Kafka");
+                    _logger.LogInformation("Raw JSON: {RawJson}", result.Message.Value);
 
                     var wrapper = JsonSerializer.Deserialize<EventMessage>(result.Message.Value);
                     if (wrapper == null)
@@ -109,11 +151,9 @@ public class KafkaConsumer : BackgroundService
                         continue;
                     }
 
-                    _logger.LogInformation("   Deserialized event:");
-                    _logger.LogInformation("   Event Type: {EventType}", wrapper.EventType);
-                    _logger.LogInformation("   Event ID: {EventId}", wrapper.EventId);
+                    _logger.LogInformation("Deserialized event type: {EventType}", wrapper.EventType);
+                    _logger.LogInformation("Deserialized event id: {EventId}", wrapper.EventId);
 
-                    _logger.LogInformation(" Received event {EventType}", wrapper.EventType);
                     try
                     {
                         await HandleEvent(wrapper.EventType, wrapper.Payload);
@@ -121,13 +161,18 @@ public class KafkaConsumer : BackgroundService
                     catch (Exception handlerEx)
                     {
                         _logger.LogError(handlerEx, "Error in event handler for {EventType}", wrapper.EventType);
-                        // Don't rethrow - allow consumer to continue
                     }
+                }
+                catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
+                {
+                    _logger.LogWarning("Kafka topic '{Topic}' is not available yet. Retrying shortly.", _topic);
+                    await EnsureTopicExistsAsync(stoppingToken);
+                    await Task.Delay(1000, stoppingToken);
                 }
                 catch (ConsumeException ex) when (ex.Error.Code != ErrorCode.Local_TimedOut)
                 {
                     _logger.LogWarning(ex, "Kafka consume error: {Code}", ex.Error.Code);
-                    await Task.Delay(1000, stoppingToken); // Backoff on error
+                    await Task.Delay(1000, stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -159,31 +204,34 @@ public class KafkaConsumer : BackgroundService
             {
                 _consumer.Close();
             }
-            catch { }
+            catch
+            {
+            }
+
             _logger.LogInformation("Kafka consumer stopped");
         }
     }
 
     private async Task HandleEvent(string eventType, JsonElement payload)
     {
-        _logger.LogInformation(" Looking for handler for event type: '{EventType}'", eventType);
-        _logger.LogInformation(" Registered handlers: {Handlers}", string.Join(", ", _eventHandlers.Keys));
+        _logger.LogInformation("Looking for handler for event type: '{EventType}'", eventType);
+        _logger.LogInformation("Registered handlers: {Handlers}", string.Join(", ", _eventHandlers.Keys));
 
         if (_eventHandlers.TryGetValue(eventType, out var handler))
         {
-            _logger.LogInformation(" Found handler! Dispatching event '{EventType}'", eventType);
+            _logger.LogInformation("Found handler. Dispatching event '{EventType}'", eventType);
             await handler(payload);
         }
         else
         {
-            _logger.LogWarning(" No handler registered for event type: {EventType}", eventType);
+            _logger.LogWarning("No handler registered for event type: {EventType}", eventType);
         }
     }
 }
 
 public class EventMessage
 {
-    public string EventType { get; set; }
+    public string EventType { get; set; } = string.Empty;
     public JsonElement Payload { get; set; }
     public Guid EventId { get; set; }
     public DateTime OccurredAt { get; set; }

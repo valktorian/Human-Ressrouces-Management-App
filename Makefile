@@ -3,7 +3,7 @@ COMPOSE := docker compose -p $(COMPOSE_PROJECT_NAME) -f docker-compose.yml
 CURRENT_DIR_PROJECT := $(shell basename "$(CURDIR)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
 CONTAINERS := workforcehub-gateway account-service-command account-service-query profile-service-command profile-service-query time-service-command time-service-query evolution-service-command evolution-service-query postgres_write mongo_read kafka adminer mongo_express kafka-ui
 
-.PHONY: up up-min up-fresh down kafka logs clean init-dbs reset build-gateway rebuild-gateway
+.PHONY: up up-min up-fresh down kafka logs clean init-dbs reset reset-dbs build-gateway rebuild-gateway
 
 up:
 	@echo " Starting all services (full)..."
@@ -49,7 +49,20 @@ clean:
 
 init-dbs:
 	@echo " Ensuring account/profile/time/evolution databases exist..."
-	docker exec -i postgres_write psql -U admin -d postgres < docker/postgres/ensure-service-databases.sql
+	@for db in account_write profile_write time_write evolution_write; do \
+		if ! docker exec postgres_write psql -U admin -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$$db'" | grep -q 1; then \
+			echo " Creating $$db..."; \
+			docker exec postgres_write psql -U admin -d postgres -c "CREATE DATABASE $$db"; \
+		fi; \
+	done
+
+reset-dbs:
+	@echo " Dropping and recreating account/profile/time/evolution databases..."
+	@for db in account_write profile_write time_write evolution_write; do \
+		echo " Resetting $$db..."; \
+		docker exec postgres_write psql -U admin -d postgres -c "DROP DATABASE IF EXISTS $$db WITH (FORCE);"; \
+		docker exec postgres_write psql -U admin -d postgres -c "CREATE DATABASE $$db;"; \
+	done
 
 build-gateway:
 	@echo " Building workforcehub-gateway image..."
