@@ -1,5 +1,6 @@
 using AccountService.Query.Domain;
 using AccountService.Query.Infrastructure;
+using Infrastructure.Api.Constants;
 using Infrastructure.Api.Messaging;
 using Infrastructure.Api.Mapping;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,7 @@ public class AccountEventConsumer : IEventHandler
     private readonly ReadDbContext _readDb;
     private readonly ILogger<AccountEventConsumer> _logger;
 
-    public string EventType => "AccountService.Command.Domain.Events.AccountCreatedEvent";
+    public string EventType => EventTypeConstants.Account.AccountCreated;
 
     public AccountEventConsumer(ReadDbContext readDb, ILogger<AccountEventConsumer> logger)
     {

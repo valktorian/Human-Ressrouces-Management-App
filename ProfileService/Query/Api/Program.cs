@@ -1,4 +1,5 @@
 using Infrastructure.Api.Authentication;
+using Infrastructure.Api.Constants;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
 using ProfileService.Query.Application.Consumers;
@@ -25,12 +26,7 @@ builder.Services.AddHostedService(sp =>
     var logger = sp.GetRequiredService<ILogger<KafkaConsumer>>();
     var consumer = new KafkaConsumer(bootstrap, topic, group, logger);
 
-    foreach (var eventType in new[]
-    {
-        "ProfileService.Command.Domain.Events.ProfileCreatedEvent",
-        "ProfileService.Command.Domain.Events.ProfileUpdatedEvent",
-        "ProfileService.Command.Domain.Events.ProfileDeletedEvent"
-    })
+    foreach (var eventType in EventTypeConstants.Profile.QuerySubscriptions)
     {
         consumer.RegisterHandler(eventType, async payload =>
         {

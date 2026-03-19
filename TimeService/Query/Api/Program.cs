@@ -1,4 +1,5 @@
 using Infrastructure.Api.Authentication;
+using Infrastructure.Api.Constants;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
 using TimeService.Query.Application.Consumers;
@@ -32,15 +33,7 @@ builder.Services.AddHostedService(sp =>
     var logger = sp.GetRequiredService<ILogger<KafkaConsumer>>();
     var consumer = new KafkaConsumer(bootstrap, topic, group, logger);
 
-    foreach (var eventType in new[]
-    {
-        "TimeService.Command.Domain.Events.TimeEntryCreatedEvent",
-        "TimeService.Command.Domain.Events.TimesheetCreatedEvent",
-        "TimeService.Command.Domain.Events.LeaveRequestCreatedEvent",
-        "TimeService.Command.Domain.Events.TimesheetStatusChangedEvent",
-        "TimeService.Command.Domain.Events.LeaveRequestStatusChangedEvent",
-        "TimeService.Command.Domain.Events.LeaveBalanceAdjustedEvent"
-    })
+    foreach (var eventType in EventTypeConstants.Time.QuerySubscriptions)
     {
         consumer.RegisterHandler(eventType, async payload =>
         {

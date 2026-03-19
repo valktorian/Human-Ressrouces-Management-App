@@ -1,5 +1,6 @@
 using Infrastructure.Api.Messaging;
 using Infrastructure.Api.Mapping;
+using Infrastructure.Api.Constants;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ProfileService.Query.Domain;
@@ -13,7 +14,7 @@ public class ProfileEventConsumer : IEventHandler
     private readonly ReadDbContext _readDb;
     private readonly ILogger<ProfileEventConsumer> _logger;
 
-    public string EventType => "ProfileService.Command.Domain.Events.ProfileCreatedEvent";
+    public string EventType => EventTypeConstants.Profile.ProfileCreated;
 
     public ProfileEventConsumer(ReadDbContext readDb, ILogger<ProfileEventConsumer> logger)
     {

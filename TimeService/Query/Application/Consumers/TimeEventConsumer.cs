@@ -1,5 +1,6 @@
 using Infrastructure.Api.Messaging;
 using Infrastructure.Api.Mapping;
+using Infrastructure.Api.Constants;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Text.Json;
@@ -13,7 +14,7 @@ public class TimeEventConsumer : IEventHandler
     private readonly ReadDbContext _readDb;
     private readonly ILogger<TimeEventConsumer> _logger;
 
-    public string EventType => "TimeService.Command.Domain.Events.TimeEntryCreatedEvent";
+    public string EventType => EventTypeConstants.Time.TimeEntryCreated;
 
     public TimeEventConsumer(ReadDbContext readDb, ILogger<TimeEventConsumer> logger)
     {

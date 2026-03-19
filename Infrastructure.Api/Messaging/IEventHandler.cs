@@ -11,7 +11,7 @@ public interface IEventHandler
 {
     /// <summary>
     /// Fully qualified event type name used as the registration key.
-    /// Example: "AccountService.Command.Domain.Events.AccountCreatedEvent"
+    /// Example: EventTypeConstants.Account.AccountCreated
     /// </summary>
     string EventType { get; }
 
