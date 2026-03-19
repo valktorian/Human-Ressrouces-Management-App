@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProfileService.Command.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ProfileService.Command.Infrastructure.Persistence;
 namespace ProfileService.Command.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ProfileCommandDbContext))]
-    partial class ProfileCommandDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260319220753_AddProfilePictureUrl")]
+    partial class AddProfilePictureUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -10,6 +10,7 @@ public record ProfileResponse(
     string? PersonalEmail,
     string? PhoneNumber,
     string? Address,
+    string? ProfilePictureUrl,
     DateTime? DateOfBirth,
     string JobTitle,
     string Department,

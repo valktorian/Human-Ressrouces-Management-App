@@ -12,6 +12,7 @@ public class Profile : BaseEntity
     public string? PersonalEmail { get; private set; }
     public string? PhoneNumber { get; private set; }
     public string? Address { get; private set; }
+    public string? ProfilePictureUrl { get; private set; }
     public DateTime? DateOfBirth { get; private set; }
     public string JobTitle { get; private set; } = string.Empty;
     public string Department { get; private set; } = string.Empty;
@@ -27,7 +28,7 @@ public class Profile : BaseEntity
     {
     }
 
-    public static Profile Create(Guid? accountId, string employeeNumber, string firstName, string lastName, string workEmail, string? personalEmail, string? phoneNumber, string? address, DateTime? dateOfBirth, string jobTitle, string department, Guid? managerProfileId, string employmentType, DateTime hireDate, string organizationRole, string employmentStatus)
+    public static Profile Create(Guid? accountId, string employeeNumber, string firstName, string lastName, string workEmail, string? personalEmail, string? phoneNumber, string? address, string? profilePictureUrl, DateTime? dateOfBirth, string jobTitle, string department, Guid? managerProfileId, string employmentType, DateTime hireDate, string organizationRole, string employmentStatus)
     {
         var now = DateTime.UtcNow;
 
@@ -42,6 +43,7 @@ public class Profile : BaseEntity
             PersonalEmail = NormalizeOptionalEmail(personalEmail),
             PhoneNumber = NormalizeOptional(phoneNumber),
             Address = NormalizeOptional(address),
+            ProfilePictureUrl = NormalizeOptional(profilePictureUrl),
             DateOfBirth = dateOfBirth,
             JobTitle = jobTitle.Trim(),
             Department = department.Trim(),
@@ -103,6 +105,12 @@ public class Profile : BaseEntity
         PhoneNumber = NormalizeOptional(phoneNumber);
         Address = NormalizeOptional(address);
         DateOfBirth = dateOfBirth;
+        Touch();
+    }
+
+    public void UpdateProfilePicture(string profilePictureUrl)
+    {
+        ProfilePictureUrl = NormalizeOptional(profilePictureUrl);
         Touch();
     }
 

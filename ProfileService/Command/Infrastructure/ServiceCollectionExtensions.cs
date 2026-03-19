@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Infrastructure.Api.Storage;
 using ProfileService.Command.Application.Abstractions;
 using ProfileService.Command.Infrastructure.Messaging;
 using ProfileService.Command.Infrastructure.Persistence;
@@ -29,6 +30,20 @@ public static class ServiceCollectionExtensions
         {
             var logger = sp.GetRequiredService<ILogger<KafkaProducer>>();
             return new KafkaProducer(logger, bootstrapServers);
+        });
+
+        services.Configure<ExternalFileStorageOptions>(configuration.GetSection("MediaStorage"));
+        services.AddHttpClient<IExternalFileStorageClient, HttpExternalFileStorageClient>((sp, client) =>
+        {
+            var options = configuration.GetSection("MediaStorage").Get<ExternalFileStorageOptions>()
+                ?? throw new InvalidOperationException("MediaStorage configuration is missing.");
+
+            if (string.IsNullOrWhiteSpace(options.BaseUrl))
+            {
+                throw new InvalidOperationException("MediaStorage:BaseUrl is missing in configuration.");
+            }
+
+            client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
         });
 
         services.AddHostedService<ProfileOutboxPublisher>();

@@ -46,6 +46,7 @@ public class ProfileEventConsumer : IEventHandler
                 PersonalEmail = payload.TryGetProperty("PersonalEmail", out var personalEmail) && personalEmail.ValueKind != JsonValueKind.Null ? personalEmail.GetString() : null,
                 PhoneNumber = payload.TryGetProperty("PhoneNumber", out var phone) && phone.ValueKind != JsonValueKind.Null ? phone.GetString() : null,
                 Address = payload.TryGetProperty("Address", out var address) && address.ValueKind != JsonValueKind.Null ? address.GetString() : null,
+                ProfilePictureUrl = payload.TryGetProperty("ProfilePictureUrl", out var profilePictureUrl) && profilePictureUrl.ValueKind != JsonValueKind.Null ? profilePictureUrl.GetString() : null,
                 DateOfBirth = payload.TryGetProperty("DateOfBirth", out var dateOfBirth) && dateOfBirth.ValueKind != JsonValueKind.Null ? dateOfBirth.GetDateTime() : null,
                 JobTitle = payload.GetProperty("JobTitle").GetString() ?? string.Empty,
                 Department = payload.GetProperty("Department").GetString() ?? string.Empty,

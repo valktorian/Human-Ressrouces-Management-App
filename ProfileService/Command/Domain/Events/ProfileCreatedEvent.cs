@@ -13,6 +13,7 @@ public class ProfileCreatedEvent : BaseEvent
     public string? PersonalEmail { get; }
     public string? PhoneNumber { get; }
     public string? Address { get; }
+    public string? ProfilePictureUrl { get; }
     public DateTime? DateOfBirth { get; }
     public string JobTitle { get; }
     public string Department { get; }
@@ -24,7 +25,7 @@ public class ProfileCreatedEvent : BaseEvent
     public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; }
 
-    public ProfileCreatedEvent(Guid profileId, Guid? accountId, string employeeNumber, string firstName, string lastName, string workEmail, string? personalEmail, string? phoneNumber, string? address, DateTime? dateOfBirth, string jobTitle, string department, Guid? managerProfileId, string employmentType, DateTime hireDate, string organizationRole, string employmentStatus, DateTime createdAt, DateTime updatedAt)
+    public ProfileCreatedEvent(Guid profileId, Guid? accountId, string employeeNumber, string firstName, string lastName, string workEmail, string? personalEmail, string? phoneNumber, string? address, string? profilePictureUrl, DateTime? dateOfBirth, string jobTitle, string department, Guid? managerProfileId, string employmentType, DateTime hireDate, string organizationRole, string employmentStatus, DateTime createdAt, DateTime updatedAt)
     {
         ProfileId = profileId;
         AccountId = accountId;
@@ -35,6 +36,7 @@ public class ProfileCreatedEvent : BaseEvent
         PersonalEmail = personalEmail;
         PhoneNumber = phoneNumber;
         Address = address;
+        ProfilePictureUrl = profilePictureUrl;
         DateOfBirth = dateOfBirth;
         JobTitle = jobTitle;
         Department = department;

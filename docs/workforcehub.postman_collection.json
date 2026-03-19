@@ -38,6 +38,7 @@
     { "key": "jwt_token", "value": "" },
     { "key": "account_id", "value": "11111111-1111-1111-1111-111111111111" },
     { "key": "profile_id", "value": "11111111-1111-1111-1111-111111111111" },
+    { "key": "sample_profile_picture_path", "value": "C:\\\\Users\\\\PC ABDOU\\\\Pictures\\\\profile.jpg" },
     { "key": "employee_id", "value": "11111111-1111-1111-1111-111111111111" },
     { "key": "time_entry_id", "value": "11111111-1111-1111-1111-111111111111" },
     { "key": "timesheet_id", "value": "11111111-1111-1111-1111-111111111111" },
@@ -254,6 +255,42 @@
           }
         },
         {
+          "name": "Create Profile With Picture",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const profileId = body.id || body.profileId || body.Id || body.ProfileId || '';",
+                  "if (profileId) pm.collectionVariables.set('profile_id', profileId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "payload",
+                  "value": "{\n  \"employeeNumber\": \"EMP-1002\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"workEmail\": \"john.doe.with.picture@workforcehub.local\",\n  \"personalEmail\": \"john.personal@local.test\",\n  \"phoneNumber\": \"+212600000000\",\n  \"address\": \"Rabat, Morocco\",\n  \"dateOfBirth\": \"1998-03-10T00:00:00Z\",\n  \"jobTitle\": \"HR Specialist\",\n  \"department\": \"Human Resources\",\n  \"managerProfileId\": null,\n  \"employmentType\": \"FullTime\",\n  \"hireDate\": \"2026-03-16T00:00:00Z\",\n  \"organizationRole\": \"HR Specialist\",\n  \"employmentStatus\": \"Active\",\n  \"accountId\": \"{{account_id}}\"\n}",
+                  "type": "text"
+                },
+                { "key": "profilePicture", "type": "file", "src": "{{sample_profile_picture_path}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{profile_command_base_url}}/api/profiles",
+              "host": [ "{{profile_command_base_url}}" ],
+              "path": [ "api", "profiles" ]
+            },
+            "description": "Multipart create example with a JSON `payload` field and an optional `profilePicture` file."
+          }
+        },
+        {
           "name": "Update Profile",
           "request": {
             "method": "PUT",
@@ -341,6 +378,28 @@
               "host": [ "{{profile_command_base_url}}" ],
               "path": [ "api", "profiles", "self", "personal-info" ]
             }
+          }
+        },
+        {
+          "name": "Upload Self Profile Picture",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{sample_profile_picture_path}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{profile_command_base_url}}/api/profiles/self/picture",
+              "host": [ "{{profile_command_base_url}}" ],
+              "path": [ "api", "profiles", "self", "picture" ]
+            },
+            "description": "Replace `sample_profile_picture_path` with an actual local image path before sending."
           }
         },
         {

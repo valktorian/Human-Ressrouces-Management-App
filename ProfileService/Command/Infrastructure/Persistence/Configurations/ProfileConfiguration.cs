@@ -21,6 +21,7 @@ public class ProfileConfiguration : IEntityTypeConfiguration<Profile>
         builder.Property(x => x.PersonalEmail).HasMaxLength(320);
         builder.Property(x => x.PhoneNumber).HasMaxLength(50);
         builder.Property(x => x.Address).HasMaxLength(500);
+        builder.Property(x => x.ProfilePictureUrl).HasMaxLength(2000);
         builder.Property(x => x.JobTitle).HasMaxLength(120).IsRequired();
         builder.Property(x => x.Department).HasMaxLength(120).IsRequired();
         builder.Property(x => x.EmploymentType).HasMaxLength(60).IsRequired();

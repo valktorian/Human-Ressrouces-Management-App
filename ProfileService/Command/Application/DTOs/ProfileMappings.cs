@@ -14,6 +14,7 @@ public static class ProfileMappings
         profile.PersonalEmail,
         profile.PhoneNumber,
         profile.Address,
+        profile.ProfilePictureUrl,
         profile.DateOfBirth,
         profile.JobTitle,
         profile.Department,

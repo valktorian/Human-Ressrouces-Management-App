@@ -1,9 +1,13 @@
 using Infrastructure.Api.Authentication;
+using Infrastructure.Api.Common;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProfileService.Command.Api.Models;
 using ProfileService.Command.Application.Commands;
 using ProfileService.Command.Application.DTOs;
+using System.Text.Json;
 
 namespace ProfileService.Command.Api.Controllers;
 
@@ -13,20 +17,64 @@ namespace ProfileService.Command.Api.Controllers;
 public class ProfileController : ControllerBase
 {
     private const string HrRoles = "HRAdmin,HRManager";
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
     private readonly ICommandDispatcher _dispatcher;
     private readonly ICurrentUserAccessor _currentUserAccessor;
+    private readonly IExternalFileStorageClient _fileStorageClient;
 
-    public ProfileController(ICommandDispatcher dispatcher, ICurrentUserAccessor currentUserAccessor)
+    public ProfileController(ICommandDispatcher dispatcher, ICurrentUserAccessor currentUserAccessor, IExternalFileStorageClient fileStorageClient)
     {
         _dispatcher = dispatcher;
         _currentUserAccessor = currentUserAccessor;
+        _fileStorageClient = fileStorageClient;
     }
 
     [HttpPost]
     [Authorize(Roles = HrRoles)]
+    [Consumes("application/json")]
     public async Task<IActionResult> Create([FromBody] CreateProfileCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<CreateProfileCommand, ProfileResponse>(command, ct);
+        return Ok(response);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = HrRoles)]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> CreateWithPicture([FromForm] CreateProfileFormRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Payload))
+        {
+            throw ApiException.BadRequest("The 'payload' form field is required.");
+        }
+
+        CreateProfileCommand? command;
+
+        try
+        {
+            command = JsonSerializer.Deserialize<CreateProfileCommand>(request.Payload, JsonOptions);
+        }
+        catch (JsonException ex)
+        {
+            throw ApiException.BadRequest("The 'payload' form field contains invalid JSON.", ex.Message);
+        }
+
+        if (command is null)
+        {
+            throw ApiException.BadRequest("The 'payload' form field contains invalid JSON.");
+        }
+
+        var profilePictureUrl = request.ProfilePicture is null
+            ? null
+            : await UploadPictureAsync(request.ProfilePicture, ct);
+
+        var response = await _dispatcher.SendAsync<CreateProfileCommand, ProfileResponse>(
+            command with { ProfilePictureUrl = profilePictureUrl },
+            ct);
+
         return Ok(response);
     }
 
@@ -72,11 +120,64 @@ public class ProfileController : ControllerBase
         return Ok(response);
     }
 
+    [HttpPost("{id:guid}/picture")]
+    [Authorize(Roles = HrRoles)]
+    public async Task<IActionResult> UploadProfilePicture(Guid id, [FromForm] IFormFile? file, CancellationToken ct)
+    {
+        var response = await UploadAndUpdatePictureAsync(
+            file,
+            new UpdateProfilePictureCommand(id, null, string.Empty),
+            ct);
+
+        return Ok(response);
+    }
+
+    [HttpPost("self/picture")]
+    public async Task<IActionResult> UploadSelfProfilePicture([FromForm] IFormFile? file, CancellationToken ct)
+    {
+        var response = await UploadAndUpdatePictureAsync(
+            file,
+            new UpdateProfilePictureCommand(null, _currentUserAccessor.GetRequiredAccountId(), string.Empty),
+            ct);
+
+        return Ok(response);
+    }
+
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = HrRoles)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _dispatcher.SendAsync<DeleteProfileCommand, bool>(new DeleteProfileCommand(id), ct);
         return NoContent();
+    }
+
+    private async Task<ProfileResponse> UploadAndUpdatePictureAsync(
+        IFormFile? file,
+        UpdateProfilePictureCommand command,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            throw global::Infrastructure.Api.Common.ApiException.BadRequest("A non-empty image file is required.");
+        }
+
+        var uploadedFileUrl = await UploadPictureAsync(file, ct);
+
+        return await _dispatcher.SendAsync<UpdateProfilePictureCommand, ProfileResponse>(
+            command with { ProfilePictureUrl = uploadedFileUrl },
+            ct);
+    }
+
+    private async Task<string> UploadPictureAsync(IFormFile file, CancellationToken ct)
+    {
+        await using var stream = file.OpenReadStream();
+        var uploadedFile = await _fileStorageClient.UploadImageAsync(
+            stream,
+            file.FileName,
+            file.ContentType,
+            "profile-pictures",
+            ct);
+
+        return uploadedFile.Url;
     }
 }

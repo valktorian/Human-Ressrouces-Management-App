@@ -25,6 +25,7 @@ builder.Services.AddScoped<ICommandHandler<UpdateProfileEmploymentCommand, Profi
 builder.Services.AddScoped<ICommandHandler<UpdateProfileStatusCommand, ProfileResponse>, UpdateProfileStatusHandler>();
 builder.Services.AddScoped<ICommandHandler<LinkProfileAccountCommand, ProfileResponse>, LinkProfileAccountHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateSelfPersonalInfoCommand, ProfileResponse>, UpdateSelfPersonalInfoHandler>();
+builder.Services.AddScoped<ICommandHandler<UpdateProfilePictureCommand, ProfileResponse>, UpdateProfilePictureHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteProfileCommand, bool>, DeleteProfileHandler>();
 builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 

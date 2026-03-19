@@ -43,6 +43,7 @@ public class CreateProfileHandler : ICommandHandler<CreateProfileCommand, Profil
             command.PersonalEmail,
             command.PhoneNumber,
             command.Address,
+            command.ProfilePictureUrl,
             command.DateOfBirth,
             command.JobTitle,
             command.Department,

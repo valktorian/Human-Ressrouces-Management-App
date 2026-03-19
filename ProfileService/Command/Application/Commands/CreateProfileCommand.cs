@@ -16,4 +16,5 @@ public record CreateProfileCommand(
     DateTime HireDate,
     string OrganizationRole,
     string EmploymentStatus,
-    Guid? AccountId);
+    Guid? AccountId,
+    string? ProfilePictureUrl = null);
