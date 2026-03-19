@@ -1,6 +1,7 @@
 using AccountService.Query.Domain;
 using AccountService.Query.Infrastructure;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Mapping;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Text.Json;
@@ -60,24 +61,12 @@ public class AccountEventConsumer : IEventHandler
         try
         {
             var accountId = payload.GetProperty("AccountId").GetGuid();
-            var email = payload.GetProperty("Email").GetString()!;
-            var firstName = payload.GetProperty("FirstName").GetString()!;
-            var lastName = payload.GetProperty("LastName").GetString()!;
-            var role = payload.GetProperty("Role").GetString()!;
-            var isActive = payload.GetProperty("IsActive").GetBoolean();
-            var createdAt = payload.GetProperty("CreatedAt").GetDateTime();
-
-            var readModel = new AccountReadModel
+            var readModel = JsonElementMapper.Map<AccountReadModel>(payload, static (source, model) =>
             {
-                Id = accountId,
-                Email = email,
-                FirstName = firstName,
-                LastName = lastName,
-                Role = role,
-                IsActive = isActive,
-                CreatedAt = createdAt,
-                UpdatedAt = DateTime.UtcNow
-            };
+                model.Id = source.GetRequiredGuid("AccountId");
+                model.UpdatedAt = DateTime.UtcNow;
+            });
+            var email = readModel.Email;
 
             await _readDb.Accounts.ReplaceOneAsync(
                 x => x.Id == accountId,

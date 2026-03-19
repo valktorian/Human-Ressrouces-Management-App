@@ -1,4 +1,5 @@
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Mapping;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ProfileService.Query.Domain;
@@ -35,29 +36,10 @@ public class ProfileEventConsumer : IEventHandler
     {
         try
         {
-            var model = new ProfileReadModel
+            var model = JsonElementMapper.Map<ProfileReadModel>(payload, static (source, readModel) =>
             {
-                Id = payload.GetProperty("ProfileId").GetGuid(),
-                AccountId = payload.TryGetProperty("AccountId", out var accountId) && accountId.ValueKind != JsonValueKind.Null ? accountId.GetGuid() : null,
-                EmployeeNumber = payload.GetProperty("EmployeeNumber").GetString() ?? string.Empty,
-                FirstName = payload.GetProperty("FirstName").GetString() ?? string.Empty,
-                LastName = payload.GetProperty("LastName").GetString() ?? string.Empty,
-                WorkEmail = payload.GetProperty("WorkEmail").GetString() ?? string.Empty,
-                PersonalEmail = payload.TryGetProperty("PersonalEmail", out var personalEmail) && personalEmail.ValueKind != JsonValueKind.Null ? personalEmail.GetString() : null,
-                PhoneNumber = payload.TryGetProperty("PhoneNumber", out var phone) && phone.ValueKind != JsonValueKind.Null ? phone.GetString() : null,
-                Address = payload.TryGetProperty("Address", out var address) && address.ValueKind != JsonValueKind.Null ? address.GetString() : null,
-                ProfilePictureUrl = payload.TryGetProperty("ProfilePictureUrl", out var profilePictureUrl) && profilePictureUrl.ValueKind != JsonValueKind.Null ? profilePictureUrl.GetString() : null,
-                DateOfBirth = payload.TryGetProperty("DateOfBirth", out var dateOfBirth) && dateOfBirth.ValueKind != JsonValueKind.Null ? dateOfBirth.GetDateTime() : null,
-                JobTitle = payload.GetProperty("JobTitle").GetString() ?? string.Empty,
-                Department = payload.GetProperty("Department").GetString() ?? string.Empty,
-                ManagerProfileId = payload.TryGetProperty("ManagerProfileId", out var managerId) && managerId.ValueKind != JsonValueKind.Null ? managerId.GetGuid() : null,
-                EmploymentType = payload.GetProperty("EmploymentType").GetString() ?? string.Empty,
-                HireDate = payload.GetProperty("HireDate").GetDateTime(),
-                OrganizationRole = payload.GetProperty("OrganizationRole").GetString() ?? string.Empty,
-                EmploymentStatus = payload.GetProperty("EmploymentStatus").GetString() ?? string.Empty,
-                CreatedAt = payload.GetProperty("CreatedAt").GetDateTime(),
-                UpdatedAt = payload.GetProperty("UpdatedAt").GetDateTime()
-            };
+                readModel.Id = source.GetRequiredGuid("ProfileId");
+            });
 
             await _readDb.Profiles.ReplaceOneAsync(x => x.Id == model.Id, model, new ReplaceOptions { IsUpsert = true });
         }

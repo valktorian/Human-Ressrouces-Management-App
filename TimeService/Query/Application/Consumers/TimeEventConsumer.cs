@@ -1,4 +1,5 @@
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Mapping;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Text.Json;
@@ -69,63 +70,30 @@ public class TimeEventConsumer : IEventHandler
 
     private async Task UpsertTimeEntryAsync(JsonElement payload)
     {
-        var model = new TimeEntryReadModel
+        var model = JsonElementMapper.Map<TimeEntryReadModel>(payload, static (source, readModel) =>
         {
-            Id = payload.GetProperty("TimeEntryId").GetGuid(),
-            AccountId = ReadNullableGuid(payload, "AccountId"),
-            EmployeeId = payload.GetProperty("EmployeeId").GetGuid(),
-            WorkDate = payload.GetProperty("WorkDate").GetDateTime(),
-            StartTime = payload.GetProperty("StartTime").GetString() ?? string.Empty,
-            EndTime = payload.GetProperty("EndTime").GetString() ?? string.Empty,
-            Hours = payload.GetProperty("Hours").GetDecimal(),
-            ProjectCode = payload.GetProperty("ProjectCode").GetString() ?? string.Empty,
-            TaskCode = payload.GetProperty("TaskCode").GetString() ?? string.Empty,
-            Notes = ReadNullableString(payload, "Notes"),
-            Status = payload.GetProperty("Status").GetString() ?? string.Empty,
-            CreatedAt = payload.GetProperty("CreatedAt").GetDateTime(),
-            UpdatedAt = payload.GetProperty("UpdatedAt").GetDateTime()
-        };
+            readModel.Id = source.GetRequiredGuid("TimeEntryId");
+        });
 
         await _readDb.TimeEntries.ReplaceOneAsync(x => x.Id == model.Id, model, new ReplaceOptions { IsUpsert = true });
     }
 
     private async Task UpsertTimesheetAsync(JsonElement payload)
     {
-        var model = new TimesheetReadModel
+        var model = JsonElementMapper.Map<TimesheetReadModel>(payload, static (source, readModel) =>
         {
-            Id = payload.GetProperty("TimesheetId").GetGuid(),
-            AccountId = ReadNullableGuid(payload, "AccountId"),
-            EmployeeId = payload.GetProperty("EmployeeId").GetGuid(),
-            PeriodStart = payload.GetProperty("PeriodStart").GetDateTime(),
-            PeriodEnd = payload.GetProperty("PeriodEnd").GetDateTime(),
-            TotalHours = payload.GetProperty("TotalHours").GetDecimal(),
-            Status = payload.GetProperty("Status").GetString() ?? string.Empty,
-            SubmittedAt = ReadNullableDateTime(payload, "SubmittedAt"),
-            ApprovedAt = ReadNullableDateTime(payload, "ApprovedAt"),
-            CreatedAt = payload.GetProperty("CreatedAt").GetDateTime(),
-            UpdatedAt = payload.GetProperty("UpdatedAt").GetDateTime()
-        };
+            readModel.Id = source.GetRequiredGuid("TimesheetId");
+        });
 
         await _readDb.Timesheets.ReplaceOneAsync(x => x.Id == model.Id, model, new ReplaceOptions { IsUpsert = true });
     }
 
     private async Task UpsertLeaveRequestAsync(JsonElement payload)
     {
-        var model = new LeaveRequestReadModel
+        var model = JsonElementMapper.Map<LeaveRequestReadModel>(payload, static (source, readModel) =>
         {
-            Id = payload.GetProperty("LeaveRequestId").GetGuid(),
-            AccountId = ReadNullableGuid(payload, "AccountId"),
-            EmployeeId = payload.GetProperty("EmployeeId").GetGuid(),
-            LeaveType = payload.GetProperty("LeaveType").GetString() ?? string.Empty,
-            StartDate = payload.GetProperty("StartDate").GetDateTime(),
-            EndDate = payload.GetProperty("EndDate").GetDateTime(),
-            Status = payload.GetProperty("Status").GetString() ?? string.Empty,
-            Reason = ReadNullableString(payload, "Reason"),
-            SubmittedAt = ReadNullableDateTime(payload, "SubmittedAt"),
-            DecisionAt = ReadNullableDateTime(payload, "DecisionAt"),
-            CreatedAt = payload.GetProperty("CreatedAt").GetDateTime(),
-            UpdatedAt = payload.GetProperty("UpdatedAt").GetDateTime()
-        };
+            readModel.Id = source.GetRequiredGuid("LeaveRequestId");
+        });
 
         await _readDb.LeaveRequests.ReplaceOneAsync(x => x.Id == model.Id, model, new ReplaceOptions { IsUpsert = true });
     }
@@ -181,17 +149,12 @@ public class TimeEventConsumer : IEventHandler
             .Find(x => x.EmployeeId == employeeId && x.LeaveType == leaveType)
             .FirstOrDefaultAsync();
 
-        var model = existing ?? new LeaveBalanceReadModel
+        var model = existing ?? JsonElementMapper.Map<LeaveBalanceReadModel>(payload, static (source, readModel) =>
         {
-            Id = leaveBalanceId,
-            AccountId = ReadNullableGuid(payload, "AccountId"),
-            EmployeeId = employeeId,
-            LeaveType = leaveType,
-            Used = 0m,
-            Pending = 0m
-        };
+            readModel.Id = source.GetRequiredGuid("LeaveBalanceId");
+        });
 
-        model.AccountId ??= ReadNullableGuid(payload, "AccountId");
+        model.AccountId ??= payload.GetOptionalGuid("AccountId");
         model.Available += delta;
         model.UpdatedAt = payload.GetProperty("UpdatedAt").GetDateTime();
 
@@ -201,18 +164,4 @@ public class TimeEventConsumer : IEventHandler
             new ReplaceOptions { IsUpsert = true });
     }
 
-    private static Guid? ReadNullableGuid(JsonElement payload, string propertyName)
-        => payload.TryGetProperty(propertyName, out var property) && property.ValueKind != JsonValueKind.Null
-            ? property.GetGuid()
-            : null;
-
-    private static DateTime? ReadNullableDateTime(JsonElement payload, string propertyName)
-        => payload.TryGetProperty(propertyName, out var property) && property.ValueKind != JsonValueKind.Null
-            ? property.GetDateTime()
-            : null;
-
-    private static string? ReadNullableString(JsonElement payload, string propertyName)
-        => payload.TryGetProperty(propertyName, out var property) && property.ValueKind != JsonValueKind.Null
-            ? property.GetString()
-            : null;
 }
