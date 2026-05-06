@@ -67,7 +67,7 @@ services:
   # KAFKA (for event sourcing)
   kafka:
     image: confluentinc/cp-kafka:7.6.1
-    container_name: kafka
+    container_name: kafka-workforce
     restart: always
     environment:
       CLUSTER_ID: "QgS7Hq7hT7i4SlM0zvbYzw"
@@ -110,7 +110,7 @@ services:
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
+    container_name: kafka-ui-workforce
     restart: always
     ports:
       - "8090:8080"

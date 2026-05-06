@@ -101,6 +101,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{0ABB0495-60A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaService.Api", "MediaService\Api\MediaService.Api.csproj", "{002EF78C-BC4F-4CDA-BD97-BD5D8FC1D037}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkForceHub.AppHost", "WorkForceHub.AppHost\WorkForceHub.AppHost.csproj", "{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -531,6 +533,18 @@ Global
 		{002EF78C-BC4F-4CDA-BD97-BD5D8FC1D037}.Release|x64.Build.0 = Release|Any CPU
 		{002EF78C-BC4F-4CDA-BD97-BD5D8FC1D037}.Release|x86.ActiveCfg = Release|Any CPU
 		{002EF78C-BC4F-4CDA-BD97-BD5D8FC1D037}.Release|x86.Build.0 = Release|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Debug|x64.Build.0 = Debug|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Debug|x86.Build.0 = Debug|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Release|x64.ActiveCfg = Release|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Release|x64.Build.0 = Release|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Release|x86.ActiveCfg = Release|Any CPU
+		{D59B92C1-7BD5-4DB7-8E38-5F9B4992D9C1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

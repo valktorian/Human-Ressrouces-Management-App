@@ -1,7 +1,7 @@
 COMPOSE_PROJECT_NAME := workforcehub
 COMPOSE := docker compose -p $(COMPOSE_PROJECT_NAME) -f docker-compose.yml
 CURRENT_DIR_PROJECT := $(shell basename "$(CURDIR)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
-CONTAINERS := workforcehub-gateway account-service-command account-service-query profile-service-command profile-service-query time-service-command time-service-query evolution-service-command evolution-service-query postgres_write mongo_read kafka adminer mongo_express kafka-ui
+CONTAINERS := workforcehub-gateway account-service-command account-service-query profile-service-command profile-service-query time-service-command time-service-query evolution-service-command evolution-service-query postgres_write mongo_read kafka-workforce adminer mongo_express kafka-ui-workforce
 POSTGRES_CONTAINER := postgres_write
 POSTGRES_WAIT_RETRIES ?= 30
 POSTGRES_WAIT_SECONDS ?= 2
