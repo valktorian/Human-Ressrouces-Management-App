@@ -27,6 +27,11 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(storage.RootPath),
     RequestPath = "/media"
 });
+app.MapGet("/health", () => Results.Ok(new
+{
+    Service = "MediaService",
+    Status = "healthy",
+}));
 app.MapControllers();
 
 app.Run();

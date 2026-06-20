@@ -7,16 +7,16 @@ services:
     container_name: postgres_write
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
     ports:
       - "55433:5432"
     volumes:
       - pg_write_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin -d postgres" ]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -30,8 +30,8 @@ services:
     container_name: mongo_read
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-root}
     ports:
       - "27017:27017"
     volumes:
@@ -53,9 +53,9 @@ services:
       - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo_read
-      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo_read:27017
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@mongo_read:27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-root}
       ME_CONFIG_BASICAUTH: "false"
       ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
     depends_on:
@@ -136,6 +136,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:80
       - GatewayMode=Docker
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
     profiles:
       - minimal
       - full
@@ -150,6 +151,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__DefaultConnection=Host=postgres_write;Port=5432;Database=account_write;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-admin}
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - postgres_write
       - kafka
@@ -166,6 +170,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__ReadDatabase=mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@mongo_read:27017/admin?authSource=admin
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - mongo_read
       - kafka
@@ -182,6 +189,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__DefaultConnection=Host=postgres_write;Port=5432;Database=profile_write;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-admin}
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - postgres_write
       - kafka
@@ -198,6 +208,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__ReadDatabase=mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@mongo_read:27017/admin?authSource=admin
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - mongo_read
       - kafka
@@ -214,6 +227,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__DefaultConnection=Host=postgres_write;Port=5432;Database=time_write;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-admin}
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - postgres_write
       - kafka
@@ -230,6 +246,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__ReadDatabase=mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@mongo_read:27017/admin?authSource=admin
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - mongo_read
       - kafka
@@ -246,6 +265,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__DefaultConnection=Host=postgres_write;Port=5432;Database=evolution_write;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-admin}
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - postgres_write
       - kafka
@@ -262,9 +284,28 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-WorkForceHub-Local-Development-Secret-Key-2026}
+      - ConnectionStrings__ReadDatabase=mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@mongo_read:27017/admin?authSource=admin
+      - Kafka__BootstrapServers=kafka:9092
     depends_on:
       - mongo_read
       - kafka
+    profiles:
+      - full
+
+  media-service:
+    build:
+      context: .
+      dockerfile: MediaService/Api/Dockerfile
+    container_name: media-service
+    ports:
+      - "5199:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - Storage__InternalApiKey=${MEDIA_INTERNAL_API_KEY:-dev-media-service-key}
+    volumes:
+      - media_uploads:/app/uploads
     profiles:
       - full
 
@@ -272,3 +313,4 @@ volumes:
   pg_write_data:
   mongo_data:
   kafka_data:
+  media_uploads:

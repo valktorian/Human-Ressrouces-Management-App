@@ -452,19 +452,43 @@
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
+      "DownstreamPathTemplate": "/api/media/images/{category}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5199
+        }
+      ],
+      "UpstreamPathTemplate": "/api/media/images/{category}",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/evolution/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "host.docker.internal",
-          "Port": 5003
+          "Port": 5011
         }
       ],
       "UpstreamPathTemplate": "/api/evolution/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/evolution/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5049
+        }
+      ],
+      "UpstreamPathTemplate": "/api/evolution/{everything}",
+      "UpstreamHttpMethod": [ "POST", "PUT", "PATCH", "DELETE" ]
     }
   ],
   "GlobalConfiguration": {
-    "RequestIdKey": "OcRequestId"
+    "RequestIdKey": "X-Correlation-ID"
   }
 }

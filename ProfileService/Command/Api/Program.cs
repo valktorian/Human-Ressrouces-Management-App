@@ -42,6 +42,11 @@ if (app.Environment.IsDevelopment())
 app.UseGlobalErrorHandler();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/health", () => Results.Ok(new
+{
+    Service = "ProfileService.Command",
+    Status = "healthy",
+}));
 app.MapControllers();
 
 app.Run();

@@ -380,6 +380,18 @@
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
+      "DownstreamPathTemplate": "/api/media/images/{category}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "media-service",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/media/images/{category}",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/evolution/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -389,10 +401,22 @@
         }
       ],
       "UpstreamPathTemplate": "/api/evolution/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/evolution/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "evolution-service-command",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/evolution/{everything}",
+      "UpstreamHttpMethod": [ "POST", "PUT", "PATCH", "DELETE" ]
     }
   ],
   "GlobalConfiguration": {
-    "RequestIdKey": "OcRequestId"
+    "RequestIdKey": "X-Correlation-ID"
   }
 }

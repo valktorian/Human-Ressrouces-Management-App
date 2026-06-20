@@ -49,6 +49,11 @@ if (app.Environment.IsDevelopment())
 app.UseGlobalErrorHandler();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/health", () => Results.Ok(new
+{
+    Service = "TimeService.Command",
+    Status = "healthy",
+}));
 
 app.MapControllers();
 
