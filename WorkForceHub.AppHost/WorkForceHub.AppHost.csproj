@@ -1,8 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.4.6" />
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.4.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WorkForceHub.Gateway\WorkForceHub.Gateway.csproj" />
+    <ProjectReference Include="..\AccountService\Command\Api\AccountService.Command.Api.csproj" />
+    <ProjectReference Include="..\AccountService\Query\Api\AccountService.Query.Api.csproj" />
+    <ProjectReference Include="..\ProfileService\Command\Api\ProfileService.Command.Api.csproj" />
+    <ProjectReference Include="..\ProfileService\Query\Api\ProfileService.Query.Api.csproj" />
+    <ProjectReference Include="..\TimeService\Command\Api\TimeService.Command.Api.csproj" />
+    <ProjectReference Include="..\TimeService\Query\Api\TimeService.Query.Api.csproj" />
+    <ProjectReference Include="..\EvolutionService\Command\Api\EvolutionService.Command.Api.csproj" />
+    <ProjectReference Include="..\EvolutionService\Query\Api\EvolutionService.Query.Api.csproj" />
+    <ProjectReference Include="..\MediaService\Api\MediaService.Api.csproj" />
+  </ItemGroup>
 </Project>

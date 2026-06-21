@@ -9,6 +9,7 @@ public class KafkaConsumer : BackgroundService
     private readonly ILogger<KafkaConsumer> _logger;
     private readonly string _bootstrapServers;
     private readonly string _topic;
+    private readonly string _groupId;
     private readonly IConsumer<string, string> _consumer;
     private readonly Dictionary<string, Func<JsonElement, Task>> _eventHandlers;
 
@@ -17,6 +18,7 @@ public class KafkaConsumer : BackgroundService
         _logger = logger;
         _bootstrapServers = bootstrapServers;
         _topic = topic;
+        _groupId = groupId;
         _eventHandlers = new Dictionary<string, Func<JsonElement, Task>>();
 
         var config = new ConsumerConfig
@@ -33,28 +35,24 @@ public class KafkaConsumer : BackgroundService
     public void RegisterHandler(string eventTypeName, Func<JsonElement, Task> handler)
     {
         _eventHandlers[eventTypeName] = handler;
-        _logger.LogInformation("Registered handler for event type: {EventType}", eventTypeName);
+        _logger.LogDebug("Registered Kafka handler for event type {EventType}", eventTypeName);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Kafka consumer starting");
+        _logger.LogInformation("Kafka consumer starting for topic {Topic} with group {GroupId}", _topic, _groupId);
         try
         {
             await Task.Yield();
-            _logger.LogInformation("About to call ConsumeEventsAsync");
             await ConsumeEventsAsync(stoppingToken);
-            _logger.LogInformation("ConsumeEventsAsync returned normally");
         }
         catch (OperationCanceledException ex)
         {
-            _logger.LogInformation(ex, "Kafka consumer cancelled");
+            _logger.LogDebug(ex, "Kafka consumer cancelled");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Fatal Kafka consumer error in ExecuteAsync: {ExceptionType}", ex.GetType().Name);
-            _logger.LogError(ex, "Exception message: {Message}", ex.Message);
-            _logger.LogError(ex, "Stack trace: {StackTrace}", ex.StackTrace);
+            _logger.LogError(ex, "Kafka consumer stopped unexpectedly for topic {Topic}", _topic);
         }
     }
 
@@ -89,7 +87,7 @@ public class KafkaConsumer : BackgroundService
         }
         catch (CreateTopicsException ex) when (ex.Results.All(r => r.Error.Code == ErrorCode.TopicAlreadyExists))
         {
-            _logger.LogInformation("Kafka topic '{Topic}' already exists", _topic);
+            _logger.LogDebug("Kafka topic {Topic} already exists", _topic);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -99,24 +97,9 @@ public class KafkaConsumer : BackgroundService
 
     private async Task ConsumeEventsAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("ConsumeEventsAsync started");
         try
         {
-            _logger.LogInformation("Kafka consumer listening on '{Topic}'", _topic);
-            try
-            {
-                await EnsureTopicExistsAsync(stoppingToken);
-                _consumer.Subscribe(_topic);
-                _logger.LogInformation("Successfully subscribed to topic '{Topic}'", _topic);
-            }
-            catch (Exception subEx)
-            {
-                _logger.LogError(subEx, "Failed to subscribe to topic '{Topic}'", _topic);
-                return;
-            }
-
-            _logger.LogInformation("About to enter message consumption loop");
-            _logger.LogInformation("Stopping token cancelled? {IsCancelled}", stoppingToken.IsCancellationRequested);
+            await SubscribeWithRetryAsync(stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -124,16 +107,7 @@ public class KafkaConsumer : BackgroundService
                 {
                     _logger.LogDebug("Waiting for messages on topic '{Topic}'...", _topic);
 
-                    ConsumeResult<string, string>? result;
-                    try
-                    {
-                        result = _consumer.Consume(TimeSpan.FromSeconds(3));
-                    }
-                    catch (Exception consumeEx)
-                    {
-                        _logger.LogError(consumeEx, "Exception in _consumer.Consume(): {ExceptionType}: {Message}", consumeEx.GetType().Name, consumeEx.Message);
-                        throw;
-                    }
+                    var result = _consumer.Consume(TimeSpan.FromSeconds(3));
 
                     if (result == null)
                     {
@@ -141,8 +115,7 @@ public class KafkaConsumer : BackgroundService
                         continue;
                     }
 
-                    _logger.LogInformation("RECEIVED MESSAGE from Kafka");
-                    _logger.LogInformation("Raw JSON: {RawJson}", result.Message.Value);
+                    _logger.LogDebug("Received Kafka message from {Topic} at offset {Offset}", result.Topic, result.Offset);
 
                     var wrapper = JsonSerializer.Deserialize<EventMessage>(result.Message.Value);
                     if (wrapper == null)
@@ -150,9 +123,6 @@ public class KafkaConsumer : BackgroundService
                         _logger.LogWarning("Invalid event format - deserialization returned null");
                         continue;
                     }
-
-                    _logger.LogInformation("Deserialized event type: {EventType}", wrapper.EventType);
-                    _logger.LogInformation("Deserialized event id: {EventId}", wrapper.EventId);
 
                     try
                     {
@@ -165,38 +135,33 @@ public class KafkaConsumer : BackgroundService
                 }
                 catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
                 {
-                    _logger.LogWarning("Kafka topic '{Topic}' is not available yet. Retrying shortly.", _topic);
+                    _logger.LogWarning("Kafka topic {Topic} is not available yet. Retrying shortly.", _topic);
                     await EnsureTopicExistsAsync(stoppingToken);
-                    await Task.Delay(1000, stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
                 catch (ConsumeException ex) when (ex.Error.Code != ErrorCode.Local_TimedOut)
                 {
-                    _logger.LogWarning(ex, "Kafka consume error: {Code}", ex.Error.Code);
-                    await Task.Delay(1000, stoppingToken);
+                    _logger.LogWarning(ex, "Kafka consume error on topic {Topic}: {Code}", _topic, ex.Error.Code);
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
-                    _logger.LogInformation("Kafka consumer was cancelled");
                     break;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "UNEXPECTED ERROR in consumer loop: {ExceptionType}: {Message}", ex.GetType().Name, ex.Message);
-                    _logger.LogError(ex, "Stack trace: {StackTrace}", ex.StackTrace);
-                    await Task.Delay(1000, stoppingToken);
+                    _logger.LogWarning(ex, "Kafka consumer loop error on topic {Topic}. Retrying shortly.", _topic);
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
-
-            _logger.LogInformation("While loop exited normally");
         }
         catch (OperationCanceledException ex)
         {
-            _logger.LogInformation(ex, "Kafka consumer shutdown - OperationCancelled");
+            _logger.LogDebug(ex, "Kafka consumer shutdown requested");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "FATAL Kafka consumer error: {ExceptionType}: {Message}", ex.GetType().Name, ex.Message);
-            _logger.LogError(ex, "Stack trace: {StackTrace}", ex.StackTrace);
+            _logger.LogError(ex, "Fatal Kafka consumer error on topic {Topic}", _topic);
         }
         finally
         {
@@ -208,18 +173,38 @@ public class KafkaConsumer : BackgroundService
             {
             }
 
-            _logger.LogInformation("Kafka consumer stopped");
+            _logger.LogInformation("Kafka consumer stopped for topic {Topic}", _topic);
+        }
+    }
+
+    private async Task SubscribeWithRetryAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await EnsureTopicExistsAsync(stoppingToken);
+                _consumer.Subscribe(_topic);
+                _logger.LogInformation("Kafka consumer subscribed to topic {Topic}", _topic);
+                return;
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to subscribe to Kafka topic {Topic}. Retrying shortly.", _topic);
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
         }
     }
 
     private async Task HandleEvent(string eventType, JsonElement payload)
     {
-        _logger.LogInformation("Looking for handler for event type: '{EventType}'", eventType);
-        _logger.LogInformation("Registered handlers: {Handlers}", string.Join(", ", _eventHandlers.Keys));
-
         if (_eventHandlers.TryGetValue(eventType, out var handler))
         {
-            _logger.LogInformation("Found handler. Dispatching event '{EventType}'", eventType);
+            _logger.LogDebug("Dispatching Kafka event {EventType}", eventType);
             await handler(payload);
         }
         else
