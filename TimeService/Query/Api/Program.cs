@@ -1,7 +1,10 @@
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Constants;
+using Infrastructure.Api.HealthChecks;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Observability;
 using TimeService.Query.Application.Consumers;
 using TimeService.Query.Domain.Repositories;
 using TimeService.Query.Infrastructure;
@@ -13,6 +16,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
 builder.Services.AddWorkForceHubSwagger("WorkForceHub Time Query API");
+builder.Services.AddWorkForceHubTracing(builder.Configuration, "TimeService.Query");
+var mongoConnectionString = builder.Configuration.GetConnectionString("ReadDatabase") ?? "mongodb://localhost:27017";
+builder.Services.AddHealthChecks()
+    .AddAsyncCheck("mongodb", async (ct) =>
+    {
+        try
+        {
+            var client = new MongoDB.Driver.MongoClient(mongoConnectionString);
+            using var cursor = await client.ListDatabaseNamesAsync(ct);
+            return HealthCheckResult.Healthy();
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy(ex.Message);
+        }
+    });
 
 var readDbContext = new ReadDbContext(builder.Configuration);
 builder.Services.AddSingleton(readDbContext);
@@ -57,11 +76,7 @@ if (app.Environment.IsDevelopment())
 app.UseGlobalErrorHandler();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/health", () => Results.Ok(new
-{
-    Service = "TimeService.Query",
-    Status = "healthy",
-}));
+app.MapHealthChecks("/health", HealthCheckExtensions.DefaultOptions);
 
 app.MapControllers();
 

@@ -7,14 +7,24 @@ using AccountService.Command.Domain;
 using AccountService.Command.Infrastructure;
 using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Extensions;
+using Infrastructure.Api.Filters;
+using Infrastructure.Api.HealthChecks;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Observability;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using AccountService.Command.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IdempotencyFilter>();
+builder.Services.Configure<MvcOptions>(options => options.Filters.Add<IdempotencyFilter>());
+builder.Services.AddWorkForceHubTracing(builder.Configuration, "AccountService.Command");
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AccountCommandDbContext>("postgresql");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
 builder.Services.AddWorkForceHubSwagger("WorkForceHub Account Command API");
@@ -43,11 +53,7 @@ if (app.Environment.IsDevelopment())
 app.UseGlobalErrorHandler();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/health", () => Results.Ok(new
-{
-    Service = "AccountService.Command",
-    Status = "healthy",
-}));
+app.MapHealthChecks("/health", HealthCheckExtensions.DefaultOptions);
 app.MapControllers();
 
 app.Run();

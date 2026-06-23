@@ -1,7 +1,11 @@
 using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Extensions;
+using Infrastructure.Api.Filters;
+using Infrastructure.Api.HealthChecks;
 using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Observability;
+using Microsoft.AspNetCore.Mvc;
 using TimeService.Command.Application.Commands;
 using TimeService.Command.Application.DTOs;
 using TimeService.Command.Application.Handlers;
@@ -9,6 +13,12 @@ using TimeService.Command.Application.Handlers;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IdempotencyFilter>();
+builder.Services.Configure<MvcOptions>(options => options.Filters.Add<IdempotencyFilter>());
+builder.Services.AddWorkForceHubTracing(builder.Configuration, "TimeService.Command");
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty, name: "postgresql");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
@@ -49,11 +59,7 @@ if (app.Environment.IsDevelopment())
 app.UseGlobalErrorHandler();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/health", () => Results.Ok(new
-{
-    Service = "TimeService.Command",
-    Status = "healthy",
-}));
+app.MapHealthChecks("/health", HealthCheckExtensions.DefaultOptions);
 
 app.MapControllers();
 

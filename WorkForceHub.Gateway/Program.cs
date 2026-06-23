@@ -1,5 +1,6 @@
 using AspNetCoreRateLimit;
 using Infrastructure.Api.Authentication;
+using Infrastructure.Api.Observability;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration.Repository;
@@ -18,6 +19,7 @@ var downstream = builder.Configuration.GetSection(DownstreamOptions.Section).Get
     ?? throw new InvalidOperationException("Downstream configuration is missing.");
 
 var ocelotConfig = OcelotConfigurationFactory.Build(downstream);
+builder.Services.AddWorkForceHubTracing(builder.Configuration, "WorkForceHub.Gateway");
 
 var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 var allowedOrigins = builder.Configuration.GetSection("Gateway:Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();

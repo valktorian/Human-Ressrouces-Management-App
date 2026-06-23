@@ -1,11 +1,15 @@
 using Infrastructure.Api.Authentication;
+using Infrastructure.Api.HealthChecks;
 using Infrastructure.Api.Middleware;
+using Infrastructure.Api.Observability;
 using MediaService.Api.Services;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddWorkForceHubTracing(builder.Configuration, "MediaService");
+builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddWorkForceHubSwagger("WorkForceHub Media API");
 builder.Services.Configure<LocalMediaStorageOptions>(builder.Configuration.GetSection("Storage"));
@@ -27,11 +31,7 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(storage.RootPath),
     RequestPath = "/media"
 });
-app.MapGet("/health", () => Results.Ok(new
-{
-    Service = "MediaService",
-    Status = "healthy",
-}));
+app.MapHealthChecks("/health", HealthCheckExtensions.DefaultOptions);
 app.MapControllers();
 
 app.Run();
