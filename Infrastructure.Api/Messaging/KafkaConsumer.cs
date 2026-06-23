@@ -12,6 +12,7 @@ public class KafkaConsumer : BackgroundService
     private readonly string _groupId;
     private readonly IConsumer<string, string> _consumer;
     private readonly Dictionary<string, Func<JsonElement, Task>> _eventHandlers;
+    private readonly Dictionary<string, int> _failureCounts = new();
 
     public KafkaConsumer(string bootstrapServers, string topic, string groupId, ILogger<KafkaConsumer> logger)
     {
@@ -125,14 +126,27 @@ public class KafkaConsumer : BackgroundService
                         continue;
                     }
 
+                    var messageKey = $"{result.Topic}-{result.Partition.Value}-{result.Offset.Value}";
+
                     try
                     {
                         await HandleEvent(wrapper.EventType, wrapper.Payload);
                         _consumer.Commit(result);
+                        _failureCounts.Remove(messageKey);
                     }
                     catch (Exception handlerEx)
                     {
-                        _logger.LogError(handlerEx, "Failed to handle event {EventType} — offset not committed, will be reprocessed", wrapper.EventType);
+                        _failureCounts.TryGetValue(messageKey, out var count);
+                        _failureCounts[messageKey] = count + 1;
+
+                        _logger.LogError(handlerEx, "Event {EventType} failed (attempt {Attempt}/3)", wrapper.EventType, _failureCounts[messageKey]);
+
+                        if (_failureCounts[messageKey] >= 3)
+                        {
+                            await ProduceToDeadLetterAsync(result.Message.Key, result.Message.Value);
+                            _consumer.Commit(result);
+                            _failureCounts.Remove(messageKey);
+                        }
                     }
                 }
                 catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
@@ -199,6 +213,29 @@ public class KafkaConsumer : BackgroundService
                 _logger.LogWarning(ex, "Failed to subscribe to Kafka topic {Topic}. Retrying shortly.", _topic);
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
+        }
+    }
+
+    private async Task ProduceToDeadLetterAsync(string key, string value)
+    {
+        try
+        {
+            using var producer = new ProducerBuilder<string, string>(new ProducerConfig
+            {
+                BootstrapServers = _bootstrapServers
+            }).Build();
+
+            await producer.ProduceAsync($"{_topic}.dead-letter", new Message<string, string>
+            {
+                Key = key,
+                Value = value
+            });
+
+            _logger.LogWarning("Message moved to dead-letter topic {Topic}.dead-letter", _topic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to produce to dead-letter topic for {Topic}", _topic);
         }
     }
 
