@@ -1,9 +1,9 @@
-using Infrastructure.Api.Extensions;
 using Infrastructure.Api.Authentication;
+using Infrastructure.Api.Extensions;
 using Infrastructure.Api.Filters;
 using Infrastructure.Api.HealthChecks;
-using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Observability;
 using Microsoft.AspNetCore.Mvc;
 using ProfileService.Command.Application.Commands;

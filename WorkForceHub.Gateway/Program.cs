@@ -5,11 +5,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
 using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
-using Ocelot.Provider.Polly;
 using Ocelot.Middleware;
+using Ocelot.Provider.Polly;
 using Polly;
 using Polly.Extensions.Http;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using WorkForceHub.Gateway.Configuration;
 

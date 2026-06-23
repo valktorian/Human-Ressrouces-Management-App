@@ -17,10 +17,12 @@ namespace ProfileService.Command.Api.Controllers;
 public class ProfileController : ControllerBase
 {
     private const string HrRoles = "HRAdmin,HRManager";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
+
     private readonly ICommandDispatcher _dispatcher;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly IExternalFileStorageClient _fileStorageClient;

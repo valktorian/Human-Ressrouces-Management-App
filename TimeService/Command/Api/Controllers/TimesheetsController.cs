@@ -1,7 +1,7 @@
 using Infrastructure.Api.Constants;
+using Infrastructure.Api.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Infrastructure.Api.Messaging;
 using TimeService.Command.Api.Contracts;
 using TimeService.Command.Application.Commands;
 using TimeService.Command.Application.DTOs;

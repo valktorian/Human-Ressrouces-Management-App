@@ -1,6 +1,6 @@
-using Infrastructure.Api.Messaging;
-using Infrastructure.Api.Mapping;
 using Infrastructure.Api.Constants;
+using Infrastructure.Api.Mapping;
+using Infrastructure.Api.Messaging;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ProfileService.Query.Domain;

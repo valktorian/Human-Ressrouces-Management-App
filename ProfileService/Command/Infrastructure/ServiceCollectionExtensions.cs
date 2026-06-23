@@ -1,10 +1,10 @@
 using Infrastructure.Api.Messaging;
 using Infrastructure.Api.Persistence;
+using Infrastructure.Api.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Infrastructure.Api.Storage;
 using ProfileService.Command.Application.Abstractions;
 using ProfileService.Command.Infrastructure.Messaging;
 using ProfileService.Command.Infrastructure.Persistence;

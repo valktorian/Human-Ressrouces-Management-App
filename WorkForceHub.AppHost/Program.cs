@@ -1,5 +1,3 @@
-using Aspire.Hosting.ApplicationModel;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 const string localJwtSecret = "WorkForceHub-Local-Development-Secret-Key-2026";

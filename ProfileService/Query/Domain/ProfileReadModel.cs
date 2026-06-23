@@ -1,4 +1,5 @@
 namespace ProfileService.Query.Domain;
+
 public class ProfileReadModel
 {
     public Guid Id { get; set; }

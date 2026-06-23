@@ -5,16 +5,16 @@ using AccountService.Command.Application.DTOs;
 using AccountService.Command.Application.Handlers;
 using AccountService.Command.Domain;
 using AccountService.Command.Infrastructure;
+using AccountService.Command.Infrastructure.Persistence;
 using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Extensions;
 using Infrastructure.Api.Filters;
 using Infrastructure.Api.HealthChecks;
-using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Observability;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using AccountService.Command.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 

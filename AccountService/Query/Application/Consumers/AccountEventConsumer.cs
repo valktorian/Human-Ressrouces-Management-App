@@ -1,8 +1,8 @@
 using AccountService.Query.Domain;
 using AccountService.Query.Infrastructure;
 using Infrastructure.Api.Constants;
-using Infrastructure.Api.Messaging;
 using Infrastructure.Api.Mapping;
+using Infrastructure.Api.Messaging;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Text.Json;

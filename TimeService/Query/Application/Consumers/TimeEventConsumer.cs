@@ -1,6 +1,6 @@
-using Infrastructure.Api.Messaging;
-using Infrastructure.Api.Mapping;
 using Infrastructure.Api.Constants;
+using Infrastructure.Api.Mapping;
+using Infrastructure.Api.Messaging;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Text.Json;
@@ -164,5 +164,4 @@ public class TimeEventConsumer : IEventHandler
             model,
             new ReplaceOptions { IsUpsert = true });
     }
-
 }

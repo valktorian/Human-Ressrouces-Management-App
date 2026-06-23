@@ -115,6 +115,8 @@ public class Profile : BaseEntity
     }
 
     private void Touch() => UpdatedAt = DateTime.UtcNow;
+
     private static string? NormalizeOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private static string? NormalizeOptionalEmail(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToLowerInvariant();
 }

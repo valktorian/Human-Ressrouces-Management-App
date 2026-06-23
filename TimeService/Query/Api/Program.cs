@@ -1,10 +1,10 @@
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Constants;
 using Infrastructure.Api.HealthChecks;
-using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Messaging;
+using Infrastructure.Api.Middleware;
 using Infrastructure.Api.Observability;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using TimeService.Query.Application.Consumers;
 using TimeService.Query.Domain.Repositories;
 using TimeService.Query.Infrastructure;
