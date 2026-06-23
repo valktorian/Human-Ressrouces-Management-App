@@ -26,7 +26,8 @@ public class KafkaConsumer : BackgroundService
             BootstrapServers = bootstrapServers,
             GroupId = groupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = true
+            EnableAutoCommit = false,
+            EnableAutoOffsetStore = false
         };
 
         _consumer = new ConsumerBuilder<string, string>(config).Build();
@@ -127,10 +128,11 @@ public class KafkaConsumer : BackgroundService
                     try
                     {
                         await HandleEvent(wrapper.EventType, wrapper.Payload);
+                        _consumer.Commit(result);
                     }
                     catch (Exception handlerEx)
                     {
-                        _logger.LogError(handlerEx, "Error in event handler for {EventType}", wrapper.EventType);
+                        _logger.LogError(handlerEx, "Failed to handle event {EventType} — offset not committed, will be reprocessed", wrapper.EventType);
                     }
                 }
                 catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
