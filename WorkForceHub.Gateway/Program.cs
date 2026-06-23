@@ -2,18 +2,21 @@ using AspNetCoreRateLimit;
 using Infrastructure.Api.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
+using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Polly;
 using Polly.Extensions.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using WorkForceHub.Gateway.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var gatewayMode = builder.Configuration["GatewayMode"] ?? builder.Environment.EnvironmentName;
-var ocelotFileName = gatewayMode.Equals("Docker", StringComparison.OrdinalIgnoreCase) ? "ocelot.docker.json" : "ocelot.json";
-builder.Configuration.AddJsonFile(ocelotFileName, optional: false, reloadOnChange: true);
+var downstream = builder.Configuration.GetSection(DownstreamOptions.Section).Get<DownstreamOptions>()
+    ?? throw new InvalidOperationException("Downstream configuration is missing.");
+
+var ocelotConfig = OcelotConfigurationFactory.Build(downstream);
 
 var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 var allowedOrigins = builder.Configuration.GetSection("Gateway:Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
@@ -40,6 +43,7 @@ builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
 builder.Services.AddOcelot(builder.Configuration);
+builder.Services.AddSingleton<IFileConfigurationRepository>(new StaticOcelotConfigRepository(ocelotConfig));
 
 var app = builder.Build();
 
@@ -75,11 +79,11 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
         entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
         var client = httpClientFactory.CreateClient("SwaggerClient");
         var merged = new JsonObject { ["openapi"] = "3.0.1", ["paths"] = new JsonObject() };
-        
+
         foreach (var (serviceName, urls) in swaggerSources)
         {
             var json = await TryFetchSwaggerDocumentAsync(client, urls, ct);
-            if (json?["paths"] is JsonObject paths) 
+            if (json?["paths"] is JsonObject paths)
                 foreach (var path in paths) merged["paths"]![path.Key] = path.Value?.DeepClone();
         }
         return merged;
