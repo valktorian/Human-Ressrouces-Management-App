@@ -80,14 +80,36 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
     {
         entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
         var client = httpClientFactory.CreateClient("SwaggerClient");
-        var merged = new JsonObject { ["openapi"] = "3.0.1", ["paths"] = new JsonObject() };
+        var merged = new JsonObject
+        {
+            ["openapi"] = "3.0.1",
+            ["info"] = new JsonObject { ["title"] = "WorkForceHub API", ["version"] = "v1" },
+            ["paths"] = new JsonObject(),
+            ["components"] = new JsonObject
+            {
+                ["schemas"] = new JsonObject(),
+                ["securitySchemes"] = new JsonObject()
+            }
+        };
 
         foreach (var (serviceName, urls) in swaggerSources)
         {
             var json = await TryFetchSwaggerDocumentAsync(client, urls, ct);
-            if (json?["paths"] is JsonObject paths)
-                foreach (var path in paths) merged["paths"]![path.Key] = path.Value?.DeepClone();
+            if (json is null) continue;
+
+            if (json["paths"] is JsonObject paths)
+                foreach (var path in paths)
+                    merged["paths"]![path.Key] = path.Value?.DeepClone();
+
+            if (json["components"]?["schemas"] is JsonObject schemas)
+                foreach (var schema in schemas)
+                    merged["components"]!["schemas"]![schema.Key] = schema.Value?.DeepClone();
+
+            if (json["components"]?["securitySchemes"] is JsonObject securitySchemes)
+                foreach (var scheme in securitySchemes)
+                    merged["components"]!["securitySchemes"]![scheme.Key] = scheme.Value?.DeepClone();
         }
+
         return merged;
     });
 });
