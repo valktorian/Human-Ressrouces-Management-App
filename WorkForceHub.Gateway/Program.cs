@@ -56,6 +56,7 @@ UseCorrelationId(app);
 app.UseAuthentication();
 app.UseAuthorization();
 UseGatewayApiAuthenticationGate(app);
+UseMediaApiKeyInjection(app, builder.Configuration);
 app.UseIpRateLimiting();
 
 app.MapGet("/health", () => Results.Ok(new
@@ -155,6 +156,20 @@ static IApplicationBuilder UseGatewayApiAuthenticationGate(IApplicationBuilder a
             return;
         }
 
+        await next();
+    });
+}
+
+static IApplicationBuilder UseMediaApiKeyInjection(IApplicationBuilder app, IConfiguration configuration)
+{
+    return app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api/media"))
+        {
+            var apiKey = configuration["Storage:InternalApiKey"];
+            if (!string.IsNullOrWhiteSpace(apiKey))
+                context.Request.Headers["X-Internal-Api-Key"] = apiKey;
+        }
         await next();
     });
 }
