@@ -57,6 +57,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate local env
+        shell: pwsh
+        run: ./scripts/generate-local-env.ps1
+
       - name: Validate Docker Compose file
         run: docker compose --profile full config
 
