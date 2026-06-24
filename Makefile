@@ -6,13 +6,19 @@ POSTGRES_CONTAINER := postgres_write
 POSTGRES_WAIT_RETRIES ?= 30
 POSTGRES_WAIT_SECONDS ?= 2
 
-.PHONY: up up-min up-fresh down kafka jaeger logs clean init-dbs wait-postgres reset reset-dbs build-gateway rebuild-gateway verify
+-include .env
+
+.PHONY: up up-min up-fresh down kafka jaeger logs clean init-dbs wait-postgres reset reset-dbs build-gateway rebuild-gateway verify generate-local-env
 
 up:
 	@echo " Starting all services (full)..."
 	$(COMPOSE) --profile full up -d
 	@echo " Ensuring per-service write databases exist..."
 	$(MAKE) init-dbs
+
+generate-local-env:
+	@echo " Generating local .env file for development..."
+	powershell -ExecutionPolicy Bypass -File .\scripts\generate-local-env.ps1
 
 up-min:
 	@echo " Starting minimal stack (postgres, mongo, kafka, admin tools, gateway)..."
@@ -58,16 +64,16 @@ init-dbs:
 	@$(MAKE) wait-postgres
 	@echo " Ensuring account/profile/time/evolution databases exist..."
 	@for db in account_write profile_write time_write evolution_write; do \
-		if ! docker exec $(POSTGRES_CONTAINER) psql -U admin -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$$db'" | grep -q 1; then \
+		if ! docker exec $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -tAc "SELECT 1 FROM pg_database WHERE datname = '$$db'" | grep -q 1; then \
 			echo " Creating $$db..."; \
-			docker exec $(POSTGRES_CONTAINER) psql -U admin -d postgres -c "CREATE DATABASE $$db"; \
+			docker exec $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "CREATE DATABASE $$db"; \
 		fi; \
 	done
 
 wait-postgres:
 	@echo " Waiting for $(POSTGRES_CONTAINER) to accept connections..."
 	@attempt=1; \
-	until docker exec $(POSTGRES_CONTAINER) pg_isready -U admin -d postgres >/dev/null 2>&1; do \
+	until docker exec $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) >/dev/null 2>&1; do \
 		if [ $$attempt -ge $(POSTGRES_WAIT_RETRIES) ]; then \
 			echo " Postgres did not become ready in time."; \
 			exit 1; \
@@ -82,8 +88,8 @@ reset-dbs:
 	@echo " Dropping and recreating account/profile/time/evolution databases..."
 	@for db in account_write profile_write time_write evolution_write; do \
 		echo " Resetting $$db..."; \
-		docker exec postgres_write psql -U admin -d postgres -c "DROP DATABASE IF EXISTS $$db WITH (FORCE);"; \
-		docker exec postgres_write psql -U admin -d postgres -c "CREATE DATABASE $$db;"; \
+		docker exec $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "DROP DATABASE IF EXISTS $$db WITH (FORCE);"; \
+		docker exec $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "CREATE DATABASE $$db;"; \
 	done
 
 build-gateway:
