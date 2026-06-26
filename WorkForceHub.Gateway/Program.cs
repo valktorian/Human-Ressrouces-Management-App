@@ -132,18 +132,22 @@ static async Task<JsonObject?> TryFetchSwaggerDocumentAsync(HttpClient client, I
     return null;
 }
 
-static bool IsPublicGatewayPath(PathString path)
+static bool IsPublicGatewayRequest(HttpRequest request)
 {
+    var path = request.Path;
+
     return path.StartsWithSegments("/health")
         || path.StartsWithSegments("/swagger")
         || path.StartsWithSegments("/gateway-docs")
         || path.StartsWithSegments("/docs")
-        || string.Equals(path.Value, "/api/auth/login", StringComparison.OrdinalIgnoreCase);
+        || string.Equals(path.Value, "/api/auth/login", StringComparison.OrdinalIgnoreCase)
+        || (HttpMethods.IsPost(request.Method)
+            && string.Equals(path.Value, "/api/accounts", StringComparison.OrdinalIgnoreCase));
 }
 
-static bool IsProtectedApiPath(PathString path)
+static bool IsProtectedApiRequest(HttpRequest request)
 {
-    return path.StartsWithSegments("/api") && !IsPublicGatewayPath(path);
+    return request.Path.StartsWithSegments("/api") && !IsPublicGatewayRequest(request);
 }
 
 static IApplicationBuilder UseCorrelationId(IApplicationBuilder app)
@@ -173,7 +177,7 @@ static IApplicationBuilder UseGatewayApiAuthenticationGate(IApplicationBuilder a
 {
     return app.Use(async (context, next) =>
     {
-        if (IsProtectedApiPath(context.Request.Path) && context.User.Identity?.IsAuthenticated != true)
+        if (IsProtectedApiRequest(context.Request) && context.User.Identity?.IsAuthenticated != true)
         {
             await context.ChallengeAsync();
             return;
