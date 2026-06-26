@@ -3,21 +3,18 @@ using Infrastructure.Api.Authentication;
 using Infrastructure.Api.Observability;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Caching.Memory;
-using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
 using Polly;
 using Polly.Extensions.Http;
 using System.Text.Json.Nodes;
-using WorkForceHub.Gateway.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var downstream = builder.Configuration.GetSection(DownstreamOptions.Section).Get<DownstreamOptions>()
-    ?? throw new InvalidOperationException("Downstream configuration is missing.");
+var ocelotFile = builder.Environment.IsEnvironment("Docker") ? "ocelot.docker.json" : "ocelot.json";
+builder.Configuration.AddJsonFile(ocelotFile, optional: false, reloadOnChange: true);
 
-var ocelotConfig = OcelotConfigurationFactory.Build(downstream);
 builder.Services.AddWorkForceHubTracing(builder.Configuration, "WorkForceHub.Gateway");
 
 var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
@@ -45,7 +42,6 @@ builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddWorkForceHubJwtAuthentication(builder.Configuration);
 builder.Services.AddOcelot(builder.Configuration).AddPolly();
-builder.Services.AddSingleton<IFileConfigurationRepository>(new StaticOcelotConfigRepository(ocelotConfig));
 
 var app = builder.Build();
 
