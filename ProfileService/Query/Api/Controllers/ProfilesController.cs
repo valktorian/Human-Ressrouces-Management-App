@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using ProfileService.Query.Domain;
 using ProfileService.Query.Infrastructure;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 
 namespace ProfileService.Query.Api.Controllers;
@@ -25,6 +26,7 @@ public class ProfilesController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "List profiles from the read model.")]
     public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination, CancellationToken ct)
     {
         try
@@ -54,15 +56,18 @@ public class ProfilesController : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Get a profile by ID.")]
     public Task<IActionResult> GetById(Guid id, CancellationToken ct)
         => FindOne(x => x.Id == id, "Profile not found.", ct);
 
     [HttpGet("by-account/{accountId:guid}")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Get a profile by account ID.")]
     public Task<IActionResult> GetByAccount(Guid accountId, CancellationToken ct)
         => FindOne(x => x.AccountId == accountId, "Profile not found for account.", ct);
 
     [HttpGet("self")]
+    [SwaggerOperation(Summary = "Get the current user's profile.")]
     public Task<IActionResult> GetSelf(CancellationToken ct)
     {
         var accountIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");

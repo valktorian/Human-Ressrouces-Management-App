@@ -3,6 +3,7 @@ using AccountService.Command.Application.DTOs;
 using Infrastructure.Api.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AccountService.Command.Api.Controllers;
 
@@ -26,6 +27,7 @@ public class AccountController : ControllerBase
     /// <returns>The created account response.</returns>
     [HttpPost]
     [AllowAnonymous]
+    [SwaggerOperation(Summary = "Create a new account.")]
     [ProducesResponseType(typeof(CreateAccountResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -43,6 +45,7 @@ public class AccountController : ControllerBase
     /// <param name="ct">The request cancellation token.</param>
     /// <returns>The updated account response.</returns>
     [HttpPut("{id:guid}")]
+    [SwaggerOperation(Summary = "Update an account profile.")]
     [ProducesResponseType(typeof(AccountResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -63,6 +66,7 @@ public class AccountController : ControllerBase
     /// <param name="ct">The request cancellation token.</param>
     /// <returns>The updated account response.</returns>
     [HttpPatch("{id:guid}/role")]
+    [SwaggerOperation(Summary = "Update an account role.")]
     [ProducesResponseType(typeof(AccountResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateRole(Guid id, [FromBody] UpdateAccountRoleCommand command, CancellationToken ct)
@@ -81,6 +85,7 @@ public class AccountController : ControllerBase
     /// <param name="command">The password change payload.</param>
     /// <param name="ct">The request cancellation token.</param>
     [HttpPatch("{id:guid}/password")]
+    [SwaggerOperation(Summary = "Change an account password.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangeAccountPasswordCommand command, CancellationToken ct)
@@ -98,6 +103,7 @@ public class AccountController : ControllerBase
     /// <param name="id">The account identifier.</param>
     /// <param name="ct">The request cancellation token.</param>
     [HttpDelete("{id:guid}")]
+    [SwaggerOperation(Summary = "Delete an account.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)

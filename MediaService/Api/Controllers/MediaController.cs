@@ -1,6 +1,7 @@
 using Infrastructure.Api.Common;
 using MediaService.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace MediaService.Api.Controllers;
 
@@ -19,6 +20,7 @@ public class MediaController : ControllerBase
 
     [HttpPost("{category}")]
     [RequestSizeLimit(5 * 1024 * 1024)]
+    [SwaggerOperation(Summary = "Upload an image for a media category.")]
     public async Task<IActionResult> UploadImage(string category, IFormFile? file, CancellationToken cancellationToken)
     {
         var configuredApiKey = _configuration["Storage:InternalApiKey"];

@@ -2,6 +2,7 @@ using Infrastructure.Api.Common;
 using Infrastructure.Api.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using TimeService.Query.Domain;
 using TimeService.Query.Domain.Repositories;
@@ -21,6 +22,7 @@ public class TimeEntriesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [SwaggerOperation(Summary = "Get a time entry by ID.")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var item = await _repository.GetByIdAsync(id, ct);
@@ -31,6 +33,7 @@ public class TimeEntriesController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = RoleConstants.ManagerOrHrAdmin)]
+    [SwaggerOperation(Summary = "List time entries.")]
     public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination, CancellationToken ct)
     {
         var totalCount = await _repository.CountAsync(ct);
@@ -41,10 +44,12 @@ public class TimeEntriesController : ControllerBase
 
     [HttpGet("by-employee/{employeeId:guid}")]
     [Authorize(Roles = RoleConstants.ManagerOrHrAdmin)]
+    [SwaggerOperation(Summary = "List time entries for an employee.")]
     public async Task<IActionResult> GetByEmployee(Guid employeeId, [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken ct)
         => Ok(BaseResponse<IReadOnlyList<TimeEntryReadModel>>.Ok(await _repository.GetByEmployeeAsync(employeeId, from, to, ct)));
 
     [HttpGet("self")]
+    [SwaggerOperation(Summary = "List time entries for the current user.")]
     public async Task<IActionResult> GetSelf([FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken ct)
         => Ok(BaseResponse<IReadOnlyList<TimeEntryReadModel>>.Ok(await _repository.GetByAccountAsync(GetCurrentAccountId(), from, to, ct)));
 

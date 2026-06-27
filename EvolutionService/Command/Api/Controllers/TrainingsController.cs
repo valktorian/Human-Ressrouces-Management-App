@@ -3,6 +3,7 @@ using EvolutionService.Command.Application.DTOs;
 using Infrastructure.Api.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EvolutionService.Command.Api.Controllers;
 
@@ -18,16 +19,19 @@ public class TrainingsController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = WriterRoles)]
+    [SwaggerOperation(Summary = "Create a training record.")]
     public Task<IActionResult> Create([FromBody] CreateTrainingCommand command, CancellationToken ct)
         => Dispatch(command, ct);
 
     [HttpPut("{id:guid}")]
     [Authorize(Roles = WriterRoles)]
+    [SwaggerOperation(Summary = "Update a training record.")]
     public Task<IActionResult> Update(Guid id, [FromBody] UpdateTrainingCommand command, CancellationToken ct)
         => Dispatch(command with { Id = id }, ct);
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = WriterRoles)]
+    [SwaggerOperation(Summary = "Delete a training record.")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _dispatcher.SendAsync<DeleteTrainingCommand, bool>(new DeleteTrainingCommand(id), ct);

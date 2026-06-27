@@ -3,6 +3,7 @@ using AccountService.Command.Application.DTOs;
 using Infrastructure.Api.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AccountService.Command.Api.Controllers;
 
@@ -24,6 +25,7 @@ public class AuthController : ControllerBase
     /// <param name="ct">The request cancellation token.</param>
     [HttpPost("login")]
     [AllowAnonymous]
+    [SwaggerOperation(Summary = "Authenticate an account and return a JWT token.")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken ct)

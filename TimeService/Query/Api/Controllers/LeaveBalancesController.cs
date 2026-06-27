@@ -2,6 +2,7 @@ using Infrastructure.Api.Common;
 using Infrastructure.Api.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 using TimeService.Query.Domain;
 using TimeService.Query.Domain.Repositories;
@@ -22,10 +23,12 @@ public class LeaveBalancesController : ControllerBase
 
     [HttpGet("{employeeId:guid}")]
     [Authorize(Roles = RoleConstants.ManagerOrHrAdmin)]
+    [SwaggerOperation(Summary = "List leave balances for an employee.")]
     public async Task<IActionResult> GetByEmployee(Guid employeeId, CancellationToken ct)
         => Ok(BaseResponse<IReadOnlyList<LeaveBalanceReadModel>>.Ok(await _repository.GetByEmployeeAsync(employeeId, ct)));
 
     [HttpGet("self")]
+    [SwaggerOperation(Summary = "List leave balances for the current user.")]
     public async Task<IActionResult> GetSelf(CancellationToken ct)
         => Ok(BaseResponse<IReadOnlyList<LeaveBalanceReadModel>>.Ok(await _repository.GetByAccountAsync(GetCurrentAccountId(), ct)));
 

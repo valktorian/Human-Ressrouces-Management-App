@@ -4,6 +4,7 @@ using Infrastructure.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace AccountService.Query.Api.Controllers;
 
@@ -25,6 +26,7 @@ public class AccountsController : ControllerBase
     /// Get all accounts from MongoDB read model
     /// </summary>
     [HttpGet]
+    [SwaggerOperation(Summary = "List accounts from the read model.")]
     [ProducesResponseType(typeof(BaseResponse<PagedResult<AccountReadModel>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllAccounts([FromQuery] PaginationRequest pagination, CancellationToken ct)
@@ -59,6 +61,7 @@ public class AccountsController : ControllerBase
     /// </summary>
     /// <param name="id">The account identifier.</param>
     [HttpGet("{id}", Name = "GetAccountById")]
+    [SwaggerOperation(Summary = "Get an account by ID.")]
     [ProducesResponseType(typeof(BaseResponse<AccountReadModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(BaseResponse<object>), StatusCodes.Status500InternalServerError)]

@@ -70,6 +70,7 @@ public static class ServiceCollectionExtensions
         services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = title, Version = "v1" });
+            options.EnableAnnotations();
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",

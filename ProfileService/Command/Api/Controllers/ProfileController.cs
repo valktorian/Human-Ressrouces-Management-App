@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProfileService.Command.Api.Models;
 using ProfileService.Command.Application.Commands;
 using ProfileService.Command.Application.DTOs;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json;
 
 namespace ProfileService.Command.Api.Controllers;
@@ -37,6 +38,7 @@ public class ProfileController : ControllerBase
     [HttpPost]
     [Authorize(Roles = HrRoles)]
     [Consumes("application/json")]
+    [SwaggerOperation(Summary = "Create a profile.")]
     public async Task<IActionResult> Create([FromBody] CreateProfileCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<CreateProfileCommand, ProfileResponse>(command, ct);
@@ -46,6 +48,7 @@ public class ProfileController : ControllerBase
     [HttpPost]
     [Authorize(Roles = HrRoles)]
     [Consumes("multipart/form-data")]
+    [SwaggerOperation(Summary = "Create a profile with a picture.")]
     public async Task<IActionResult> CreateWithPicture([FromForm] CreateProfileFormRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request.Payload))
@@ -82,6 +85,7 @@ public class ProfileController : ControllerBase
 
     [HttpPut("{id:guid}")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Update a profile.")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProfileCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<UpdateProfileCommand, ProfileResponse>(command with { ProfileId = id }, ct);
@@ -90,6 +94,7 @@ public class ProfileController : ControllerBase
 
     [HttpPatch("{id:guid}/employment")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Update profile employment details.")]
     public async Task<IActionResult> UpdateEmployment(Guid id, [FromBody] UpdateProfileEmploymentCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<UpdateProfileEmploymentCommand, ProfileResponse>(command with { ProfileId = id }, ct);
@@ -98,6 +103,7 @@ public class ProfileController : ControllerBase
 
     [HttpPatch("{id:guid}/status")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Update a profile employment status.")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateProfileStatusCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<UpdateProfileStatusCommand, ProfileResponse>(command with { ProfileId = id }, ct);
@@ -106,6 +112,7 @@ public class ProfileController : ControllerBase
 
     [HttpPost("{id:guid}/link-account")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Link a profile to an account.")]
     public async Task<IActionResult> LinkAccount(Guid id, [FromBody] LinkProfileAccountCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<LinkProfileAccountCommand, ProfileResponse>(command with { ProfileId = id }, ct);
@@ -113,6 +120,7 @@ public class ProfileController : ControllerBase
     }
 
     [HttpPatch("self/personal-info")]
+    [SwaggerOperation(Summary = "Update personal information for the current profile.")]
     public async Task<IActionResult> UpdateSelfPersonalInfo([FromBody] UpdateSelfPersonalInfoCommand command, CancellationToken ct)
     {
         var response = await _dispatcher.SendAsync<UpdateSelfPersonalInfoCommand, ProfileResponse>(
@@ -124,6 +132,7 @@ public class ProfileController : ControllerBase
 
     [HttpPost("{id:guid}/picture")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Upload a profile picture.")]
     public async Task<IActionResult> UploadProfilePicture(Guid id, [FromForm] IFormFile? file, CancellationToken ct)
     {
         var response = await UploadAndUpdatePictureAsync(
@@ -135,6 +144,7 @@ public class ProfileController : ControllerBase
     }
 
     [HttpPost("self/picture")]
+    [SwaggerOperation(Summary = "Upload a picture for the current profile.")]
     public async Task<IActionResult> UploadSelfProfilePicture([FromForm] IFormFile? file, CancellationToken ct)
     {
         var response = await UploadAndUpdatePictureAsync(
@@ -147,6 +157,7 @@ public class ProfileController : ControllerBase
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = HrRoles)]
+    [SwaggerOperation(Summary = "Delete a profile.")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await _dispatcher.SendAsync<DeleteProfileCommand, bool>(new DeleteProfileCommand(id), ct);

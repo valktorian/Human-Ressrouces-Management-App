@@ -2,6 +2,7 @@ using Infrastructure.Api.Constants;
 using Infrastructure.Api.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TimeService.Command.Application.Commands;
 using TimeService.Command.Application.DTOs;
 
@@ -21,6 +22,7 @@ public class LeaveBalancesController : ControllerBase
 
     [HttpPost("{employeeId:guid}/adjust")]
     [Authorize(Roles = RoleConstants.HrAdmin)]
+    [SwaggerOperation(Summary = "Adjust an employee leave balance.")]
     public async Task<IActionResult> Adjust(Guid employeeId, [FromBody] AdjustLeaveBalanceCommand command, CancellationToken ct)
         => Ok(await _dispatcher.SendAsync<AdjustLeaveBalanceCommand, CommandAcceptedResponse>(command with { EmployeeId = employeeId }, ct));
 }

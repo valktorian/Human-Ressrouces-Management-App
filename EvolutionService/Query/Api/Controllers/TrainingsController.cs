@@ -5,6 +5,7 @@ using Infrastructure.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
 
 namespace EvolutionService.Query.Api.Controllers;
@@ -26,6 +27,7 @@ public class TrainingsController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = ReaderRoles)]
+    [SwaggerOperation(Summary = "List training records.")]
     public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination, CancellationToken ct)
     {
         var totalCount = await _repository.CountAsync(ct);
@@ -35,6 +37,7 @@ public class TrainingsController : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize(Roles = ReaderRoles)]
+    [SwaggerOperation(Summary = "Get a training record by ID.")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var item = await _repository.GetByIdAsync(id, ct);
@@ -43,10 +46,12 @@ public class TrainingsController : ControllerBase
 
     [HttpGet("employee/{employeeId:guid}")]
     [Authorize(Roles = ReaderRoles)]
+    [SwaggerOperation(Summary = "List training records for an employee.")]
     public async Task<IActionResult> GetByEmployee(Guid employeeId, CancellationToken ct)
         => Ok(BaseResponse<IReadOnlyList<TrainingReadModel>>.Ok(await _repository.GetByEmployeeAsync(employeeId, ct)));
 
     [HttpGet("self")]
+    [SwaggerOperation(Summary = "List training records for the current user.")]
     public async Task<IActionResult> GetSelf(CancellationToken ct)
     {
         var employeeId = await ResolveCurrentEmployeeIdAsync(ct);

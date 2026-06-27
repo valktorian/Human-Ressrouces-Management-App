@@ -1,6 +1,7 @@
 using Infrastructure.Api.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TimeService.Query.Domain;
 using TimeService.Query.Domain.Repositories;
 
@@ -19,10 +20,12 @@ public class ReferenceDataController : ControllerBase
     }
 
     [HttpGet("holidays")]
+    [SwaggerOperation(Summary = "List holidays for a country and year.")]
     public async Task<IActionResult> GetHolidays([FromQuery] int year, [FromQuery] string country = "MA", CancellationToken ct = default)
         => Ok(BaseResponse<IReadOnlyList<HolidayReadModel>>.Ok(await _repository.GetHolidaysAsync(year, country, ct)));
 
     [HttpGet("leave-types")]
+    [SwaggerOperation(Summary = "List available leave types.")]
     public async Task<IActionResult> GetLeaveTypes(CancellationToken ct)
         => Ok(BaseResponse<IReadOnlyList<LeaveTypeReadModel>>.Ok(await _repository.GetLeaveTypesAsync(ct)));
 }
