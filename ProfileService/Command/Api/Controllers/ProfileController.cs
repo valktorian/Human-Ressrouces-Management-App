@@ -133,7 +133,7 @@ public class ProfileController : ControllerBase
     [HttpPost("{id:guid}/picture")]
     [Authorize(Roles = HrRoles)]
     [SwaggerOperation(Summary = "Upload a profile picture.")]
-    public async Task<IActionResult> UploadProfilePicture(Guid id, [FromForm] IFormFile? file, CancellationToken ct)
+    public async Task<IActionResult> UploadProfilePicture(Guid id, IFormFile? file, CancellationToken ct)
     {
         var response = await UploadAndUpdatePictureAsync(
             file,
@@ -145,7 +145,7 @@ public class ProfileController : ControllerBase
 
     [HttpPost("self/picture")]
     [SwaggerOperation(Summary = "Upload a picture for the current profile.")]
-    public async Task<IActionResult> UploadSelfProfilePicture([FromForm] IFormFile? file, CancellationToken ct)
+    public async Task<IActionResult> UploadSelfProfilePicture(IFormFile? file, CancellationToken ct)
     {
         var response = await UploadAndUpdatePictureAsync(
             file,
