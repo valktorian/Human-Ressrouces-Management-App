@@ -96,7 +96,7 @@ app.MapGet("/gateway-docs/v1/openapi.json", async (IHttpClientFactory httpClient
 
             if (json["paths"] is JsonObject paths)
                 foreach (var path in paths)
-                    merged["paths"]![path.Key] = path.Value?.DeepClone();
+                    MergeSwaggerPath((JsonObject)merged["paths"]!, path.Key, path.Value);
 
             if (json["components"]?["schemas"] is JsonObject schemas)
                 foreach (var schema in schemas)
@@ -126,6 +126,25 @@ static async Task<JsonObject?> TryFetchSwaggerDocumentAsync(HttpClient client, I
         try { var response = await client.GetAsync(url, ct); if (response.IsSuccessStatusCode) return JsonNode.Parse(await response.Content.ReadAsStringAsync(ct))?.AsObject(); } catch { }
     }
     return null;
+}
+
+static void MergeSwaggerPath(JsonObject targetPaths, string pathKey, JsonNode? sourcePath)
+{
+    if (sourcePath is not JsonObject sourceOperations)
+    {
+        return;
+    }
+
+    if (targetPaths[pathKey] is not JsonObject targetOperations)
+    {
+        targetPaths[pathKey] = sourceOperations.DeepClone();
+        return;
+    }
+
+    foreach (var operation in sourceOperations)
+    {
+        targetOperations[operation.Key] = operation.Value?.DeepClone();
+    }
 }
 
 static bool IsPublicGatewayRequest(HttpRequest request)

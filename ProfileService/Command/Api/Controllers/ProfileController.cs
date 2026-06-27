@@ -45,7 +45,7 @@ public class ProfileController : ControllerBase
         return Ok(response);
     }
 
-    [HttpPost]
+    [HttpPost("with-picture")]
     [Authorize(Roles = HrRoles)]
     [Consumes("multipart/form-data")]
     [SwaggerOperation(Summary = "Create a profile with a picture.")]

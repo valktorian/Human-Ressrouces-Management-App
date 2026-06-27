@@ -200,6 +200,18 @@
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
+      "DownstreamPathTemplate": "/api/profiles/with-picture",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "host.docker.internal",
+          "Port": 5062
+        }
+      ],
+      "UpstreamPathTemplate": "/api/profiles/with-picture",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/profiles/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

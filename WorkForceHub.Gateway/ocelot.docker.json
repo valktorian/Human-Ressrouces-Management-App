@@ -128,6 +128,18 @@
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
+      "DownstreamPathTemplate": "/api/profiles/with-picture",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "profile-service-command",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/profiles/with-picture",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/profiles/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
