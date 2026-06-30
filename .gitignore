@@ -51,6 +51,7 @@ dist/
 # Others
 node_modules/
 .env
+MediaService/Api/uploads/
 
 # Prevent Visual Studio from recreating local .sln files
 Infrastructure.Api.sln

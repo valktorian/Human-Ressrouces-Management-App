@@ -15,8 +15,11 @@ public class EvolutionCommandDbContextFactory : IDesignTimeDbContextFactory<Evol
             .AddEnvironmentVariables()
             .Build();
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Host=localhost;Port=55433;Database=evolution_write;Username=admin;Password=admin";
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'DefaultConnection' is required.");
+        }
 
         var optionsBuilder = new DbContextOptionsBuilder<EvolutionCommandDbContext>();
         optionsBuilder.UseNpgsql(connectionString);

@@ -23,7 +23,7 @@ resources:
       leave_request_id: 11111111-1111-1111-1111-111111111111
       jwt_token: ""
       email: john.doe@local.test
-      password: P@ssw0rd123!
+      password: CHANGE_ME_DEMO_PASSWORD
 
   - _id: fld_time_auth
     _type: request_group

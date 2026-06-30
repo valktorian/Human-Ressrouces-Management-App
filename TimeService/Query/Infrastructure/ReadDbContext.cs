@@ -10,8 +10,11 @@ public class ReadDbContext
 
     public ReadDbContext(IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("ReadDatabase")
-            ?? "mongodb://root:root@localhost:27017/admin?authSource=admin";
+        var connectionString = configuration.GetConnectionString("ReadDatabase");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'ReadDatabase' is required.");
+        }
 
         var client = new MongoClient(connectionString);
         _database = client.GetDatabase("time_read");
