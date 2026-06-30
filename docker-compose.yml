@@ -170,6 +170,7 @@ services:
       - postgres_write
       - kafka
     profiles:
+      - minimal
       - full
 
   account-service-query:
@@ -188,6 +189,7 @@ services:
       - mongo_read
       - kafka
     profiles:
+      - minimal
       - full
 
   profile-service-command:
@@ -206,6 +208,7 @@ services:
       - postgres_write
       - kafka
     profiles:
+      - minimal
       - full
 
   profile-service-query:
@@ -224,6 +227,7 @@ services:
       - mongo_read
       - kafka
     profiles:
+      - minimal
       - full
 
   time-service-command:
@@ -242,6 +246,7 @@ services:
       - postgres_write
       - kafka
     profiles:
+      - minimal
       - full
 
   time-service-query:
@@ -260,6 +265,7 @@ services:
       - mongo_read
       - kafka
     profiles:
+      - minimal
       - full
 
   evolution-service-command:
@@ -278,6 +284,7 @@ services:
       - postgres_write
       - kafka
     profiles:
+      - minimal
       - full
 
   evolution-service-query:
@@ -296,6 +303,7 @@ services:
       - mongo_read
       - kafka
     profiles:
+      - minimal
       - full
 
   media-service:
@@ -311,6 +319,7 @@ services:
     volumes:
       - media_uploads:/app/uploads
     profiles:
+      - minimal
       - full
 
 volumes:
