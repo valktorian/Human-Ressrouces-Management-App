@@ -1,0 +1,52 @@
+name: API Smoke And Seed
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_runs:
+        description: Number of account/profile seeds to ensure
+        required: false
+        default: "10"
+      seed_namespace:
+        description: Stable namespace; change only when you want a new seed batch
+        required: false
+        default: "demo-v1"
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-smoke-and-seed
+  cancel-in-progress: false
+
+jobs:
+  smoke-and-seed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate seed configuration
+        env:
+          WORKFORCEHUB_API_BASE_URL: ${{ secrets.WORKFORCEHUB_API_BASE_URL }}
+          SEED_ACCOUNT_PASSWORD: ${{ secrets.SEED_ACCOUNT_PASSWORD }}
+        run: |
+          test -n "$WORKFORCEHUB_API_BASE_URL" || (echo "Missing WORKFORCEHUB_API_BASE_URL repository secret." && exit 1)
+          test -n "$SEED_ACCOUNT_PASSWORD" || (echo "Missing SEED_ACCOUNT_PASSWORD repository secret." && exit 1)
+
+      - name: Run API smoke tests and seed data
+        env:
+          WORKFORCEHUB_API_BASE_URL: ${{ secrets.WORKFORCEHUB_API_BASE_URL }}
+          SEED_ACCOUNT_PASSWORD: ${{ secrets.SEED_ACCOUNT_PASSWORD }}
+          SEED_RUNS: ${{ inputs.seed_runs || '10' }}
+          SEED_NAMESPACE: ${{ inputs.seed_namespace || 'demo-v1' }}
+          SEED_CLEANUP_AFTER: "true"
+        run: python scripts/seed_api.py
